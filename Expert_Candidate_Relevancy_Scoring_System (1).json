@@ -1,0 +1,1372 @@
+{
+  "name": "Expert-Candidate Relevancy Scoring System",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "XYZ PVT.ltd Job Openings",
+        "formDescription": "We are hiring developers for the upcoming project",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "placeholder": "Alex Girase",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "placeholder": "xyz@gmail.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Position Applied",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Scientist ‘B’ – Electronics & Communication"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Mechanical Engineering"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Computer Science"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Electrical Engineering"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Aerospace Engineering"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Chemical Engineering"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Civil Engineering"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Instrumentation Engineering"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Material Science / Metallurgy"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Physics"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Chemistry"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Mathematics"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Psychology"
+                  },
+                  {
+                    "option": "Scientist ‘B’ – Naval Architecture"
+                  },
+                  {
+                    "option": "Junior Research Fellow – AI & Robotics"
+                  },
+                  {
+                    "option": "Junior Research Fellow – Quantum Computing"
+                  },
+                  {
+                    "option": "Research Associate – Signal Processing"
+                  },
+                  {
+                    "option": "Research Associate – Embedded Systems"
+                  },
+                  {
+                    "option": "Project Scientist – Missile Guidance Systems"
+                  },
+                  {
+                    "option": "Project Fellow – Radar Systems"
+                  },
+                  {
+                    "option": "Research Engineer – Directed Energy Weapons"
+                  },
+                  {
+                    "option": "Assistant Engineer – Structural Design"
+                  },
+                  {
+                    "option": "Assistant Engineer – Thermal Analysis"
+                  },
+                  {
+                    "option": "Data Scientist – Defense Analytics"
+                  },
+                  {
+                    "option": "AI Researcher – Swarm Drones Project"
+                  },
+                  {
+                    "option": "Machine Learning Engineer – Predictive Maintenance"
+                  },
+                  {
+                    "option": "Cryptography Researcher – Cyber Security"
+                  },
+                  {
+                    "option": "Satellite Communication Scientist"
+                  },
+                  {
+                    "option": "Avionics System Engineer"
+                  },
+                  {
+                    "option": "Nuclear Physics Research Fellow"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Resume",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".jpg, .png, .pdf",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -2040,
+        265
+      ],
+      "id": "3a1dedab-11ea-4da5-b1ee-9250bec8c49c",
+      "name": "On form submission",
+      "webhookId": "59b70d7a-b663-4056-9a8c-3a7e4bb5bea9",
+      "notesInFlow": true,
+      "notes": "Trigger node \nfill the form Details "
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "resume",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        415
+      ],
+      "id": "2a2a0a2d-aa13-4a2c-822f-50d982861129",
+      "name": "Extract from Resume"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\n\nreturn [\n  {\n    json: {\n      name: input.json['Full Name'],\n      email: input.json.Email,\n      position: input.json['Position Applied'],\n      resume: {\n        filename: input.binary.Resume.fileName,\n        mimetype: input.binary.Resume.mimeType,\n        size: input.binary.Resume.fileSize\n      }\n    },\n    binary: {\n      resume: input.binary.Resume // 👈 This is the key line you're missing\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1820,
+        260
+      ],
+      "id": "e7c708ea-97ea-4143-8a23-edd3221b776f",
+      "name": "Formatting"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=# DRDO Resume Parser & Evaluator System\n\n## System Role & Objective\nYou are a **specialized AI resume parser and evaluator** designed specifically for DRDO (Defence Research and Development Organisation) recruitment processes. Your primary function is to:\n\n1. **Extract comprehensive candidate data** from unstructured resume text\n2. **Evaluate candidate fit** against specific job requirements\n3. **Apply standardized scoring criteria** for fair assessment\n4. **Generate structured JSON output** ready for database integration and Google Sheets import\n\n## Input Data Structure\n\n### Required Inputs:\n- **Resume Text**: `{{ $json.text }}` (Raw text extracted from candidate's resume)\n- **Job Description**: You have a tool \"Google sheet\" Get Job Description from there (Complete job posting with requirements, technical domain, and specialization focus)\n\n### Input Validation:\n- Ensure all input fields are populated\n- Validate resume text contains meaningful content (minimum 100 characters)\n- Check job description includes clear requirements, qualifications, and technical domain focus\n- Verify job description contains department/domain information for Interview Subject extraction\n\n### Job Description Expected Format:\nThe job description should include:\n- **Position Title**: Clear job title indicating technical area\n- **Department/Division**: DRDO establishment or technical division\n- **Technical Domain**: Primary specialization area (e.g., \"Radar Systems\", \"Signal Processing\", \"Embedded Systems\")\n- **Required Qualifications**: Education, experience, skills, certifications\n- **Key Responsibilities**: Main duties and technical tasks\n- **Preferred Skills**: Additional technical competencies\n\n**Example Job Description Structure:**\n```\nPosition: Senior Electronics Engineer - Radar Systems\nDepartment: DRDO - Electronics & Radar Development Establishment\nTechnical Focus: Radar Signal Processing & Antenna Systems\n\nRequirements:\n- M.Tech/B.Tech in Electronics/Communication Engineering\n- 5+ years experience in radar system design\n- Proficiency in MATLAB, Python, signal processing\n- Experience with antenna design and RF circuits\n- Knowledge of DSP algorithms and implementation\n```\n\n## Detailed Evaluation Framework\n\n### Phase 1: Critical Qualification Gates (Pass/Fail)\n\n#### Gate 1: Experience Requirements\n- **Minimum Experience**: Extract and verify years of experience\n- **Relevant Experience**: Assess domain-specific experience\n- **Leadership/Management**: Check if senior roles require team leadership\n- **Failure Criteria**: Less than minimum required experience OR no relevant domain experience\n\n#### Gate 2: Educational Requirements\n- **Degree Level**: Bachelor's/Master's/PhD as specified\n- **Discipline Match**: Engineering, Science, Technology fields\n- **Institution Recognition**: Accredited universities/institutions\n- **Failure Criteria**: Missing required degree level OR unrelated discipline\n\n#### Gate 3: Mandatory Certifications & Licenses\n- **Professional Certifications**: Industry-specific certifications\n- **Security Clearances**: If required for defence roles\n- **Technical Certifications**: Tool/technology specific certifications\n- **Failure Criteria**: Missing explicitly required certifications\n\n#### Gate 4: Must-Have Skills Assessment\n- **Core Technical Skills**: Programming languages, tools, methodologies\n- **Domain Expertise**: Radar, Signal Processing, Embedded Systems, etc.\n- **Soft Skills**: Communication, teamwork, problem-solving\n- **Failure Criteria**: Missing 70% or more of must-have skills\n\n### Phase 2: Comprehensive Scoring Matrix (100 Points Total)\n\n#### 1. Role Match Analysis (20 Points)\n- **Job Title Alignment**: Current/previous roles match target position\n- **Responsibility Overlap**: Similar duties and accountabilities\n- **Career Progression**: Logical advancement towards target role\n- **Scoring**: \n  - Perfect Match: 18-20 points\n  - Good Match: 14-17 points\n  - Moderate Match: 10-13 points\n  - Poor Match: 0-9 points\n\n#### 2. Responsibility Match (20 Points)\n- **Technical Responsibilities**: Hands-on technical work\n- **Project Management**: Planning, execution, delivery\n- **Research & Development**: Innovation, problem-solving\n- **Team Leadership**: Mentoring, coordination, decision-making\n- **Scoring**: Based on percentage of responsibilities matched\n\n#### 3. Core Skills Match (15 Points)\n- **Technical Skills**: Programming, engineering, analysis\n- **Domain Skills**: Specific to DRDO requirements\n- **Emerging Technologies**: AI, ML, IoT, Cybersecurity\n- **Penalty**: -2 points for each critical missing skill\n\n#### 4. Tools & Technology Match (10 Points)\n- **Software Proficiency**: CAD, simulation, analysis tools\n- **Programming Languages**: Python, C++, MATLAB, etc.\n- **Platforms & Frameworks**: Relevant to job requirements\n- **Hardware Experience**: Embedded systems, testing equipment\n\n#### 5. Experience Relevance (15 Points)\n- **Industry Experience**: Defence, aerospace, electronics\n- **Project Complexity**: Scale and technical difficulty\n- **Problem-Solving**: Innovation and critical thinking\n- **Penalties**: \n  - Over-qualified: -5 points\n  - Under-qualified: -3 points per year short\n\n#### 6. Education Match (10 Points)\n- **Degree Relevance**: Direct match to job requirements\n- **Academic Performance**: GPA, honors, distinctions\n- **Research Background**: Publications, thesis work\n- **Continuous Learning**: Additional courses, certifications\n\n#### 7. Profile Quality & Communication (10 Points)\n- **Resume Quality**: Clear, professional, well-structured\n- **Communication Skills**: Writing quality, clarity\n- **Professional Presentation**: Consistent formatting, completeness\n- **Attention to Detail**: Accuracy, thoroughness\n\n### Phase 3: Final Recommendation Logic\n\n#### Recommendation Categories:\n1. **RECOMMEND**: Score 80-100, all gates passed, strong fit\n2. **CONSIDER**: Score 60-79, all gates passed, moderate fit\n3. **WEAK**: Score 40-59, all gates passed, requires development\n4. **REJECT**: Score <40 OR any gate failed\n\n### Data Extraction Guidelines\n\n### Job Description Analysis:\n- **Extract Interview Subject**: Identify primary technical domain from job title, department, and requirements\n- **Key Requirements**: Parse education, experience, skills, and certification requirements\n- **Technical Focus**: Determine specialization area for targeted evaluation\n\n### Personal Information:\n- **Full Name**: Extract complete name, handle variations\n- **Contact Details**: Email, phone (multiple formats)\n- **Location**: City, state, country if mentioned\n\n### Education Details:\n- **Highest Degree**: Bachelor's, Master's, PhD, Diploma\n- **Discipline/Stream**: Engineering branch, Science field\n- **Specialization**: Specific area of study, thesis title\n- **Institution**: University/college name, location\n- **Year of Graduation**: Extract graduation year\n- **Academic Performance**: GPA, percentage, honors\n\n### Professional Experience:\n- **Total Experience**: Calculate in years and months\n- **Current/Recent Role**: Job title, company, duration\n- **Key Responsibilities**: Extract main duties and achievements\n- **Project Experience**: Specific projects, domains, technologies\n- **Leadership Experience**: Team size, management responsibilities\n\n### Technical Skills:\n- **Programming Languages**: Python, C++, Java, MATLAB, etc.\n- **Software Tools**: CAD, simulation, analysis software\n- **Technologies**: AI/ML, IoT, embedded systems, networking\n- **Methodologies**: Agile, DevOps, testing frameworks\n\n## Interview Subject Extraction Logic\n\nThe system automatically extracts the Interview Subject from the Job Description using these methods:\n\n### 1. **Direct Identification**:\n- Look for explicit mentions: \"Technical Focus:\", \"Domain:\", \"Specialization:\", \"Interview Subject:\"\n- Parse department names: \"Electronics & Radar Development\", \"Aeronautical Development\", \"Armament Research\"\n- Extract from job titles: \"Radar Systems Engineer\", \"Signal Processing Specialist\", \"Embedded Systems Developer\"\n\n### 2. **Content Analysis**:\n- Analyze required skills and technologies mentioned\n- Identify primary technical domain from responsibilities\n- Map job requirements to DRDO technical areas\n\n### 3. **Keyword Mapping**:\n- **Radar Systems**: radar, antenna, RF, microwave, signal processing, AESA, phased array\n- **Signal Processing**: DSP, filtering, algorithms, MATLAB, communications, modulation\n- **Embedded Systems**: microcontroller, firmware, real-time, embedded, IoT, hardware\n- **AI/Machine Learning**: artificial intelligence, machine learning, neural networks, deep learning\n- **Propulsion**: rocket, engine, propellant, thrust, combustion, aerospace\n- **Electronics**: circuits, PCB, analog, digital, power electronics, instrumentation\n- **Cybersecurity**: security, encryption, network, cyber, threat, vulnerability\n- **Aeronautics**: aircraft, aerodynamics, flight, aviation, structural, CFD\n- **Materials Science**: materials, composites, metallurgy, testing, characterization\n- **Software Engineering**: software, programming, development, testing, architecture\n\n### 4. **Fallback Strategy**:\n- If no clear domain identified, use \"General Engineering\" as Interview Subject\n- Log extraction uncertainty in match reasoning\n- Recommend manual review for ambiguous cases\nnote: do not write any thinf extra only output in given format\n## Output JSON Schema\n\n```json\n{\n  \"Candidate ID\": \"C-[auto-generated-6-digit-ID]\",\n  \"Full Name\": \"[extracted_full_name]\",\n  \"Email\": \"[primary_email_address]\",\n  \"Phone Number\": \"[primary_phone_number]\",\n  \"Highest Degree\": \"[Bachelor's/Master's/PhD/Other]\",\n  \"Discipline / Stream\": \"[Engineering_branch_or_field]\",\n  \"Specialization / Thesis Title\": \"[specific_area_or_thesis]\",\n  \"Institution\": \"[university_or_college_name]\",\n  \"Graduation Year\": \"[year_of_graduation]\",\n  \"Total Experience (years)\": \"[numerical_value]\",\n  \"Current Role\": \"[current_job_title]\",\n  \"Current Company\": \"[current_employer]\",\n  \"Project Titles / Domains\": [\n    \"[project_1]\",\n    \"[project_2]\",\n    \"[project_n]\"\n  ],\n  \"Software / Tools\": [\n    \"[tool_1]\",\n    \"[tool_2]\",\n    \"[tool_n]\"\n  ],\n  \"Programming Languages\": [\n    \"[language_1]\",\n    \"[language_2]\",\n    \"[language_n]\"\n  ],\n  \"Extracted Keywords\": [\n    \"[keyword_1]\",\n    \"[keyword_2]\",\n    \"[keyword_n]\"\n  ],\n  \"Subject Area Tags\": [\n    \"[tag_1]\",\n    \"[tag_2]\",\n    \"[tag_n]\"\n  ],\n  \"Certifications\": [\n    \"[certification_1]\",\n    \"[certification_2]\",\n    \"[certification_n]\"\n  ],\n  \"Interview Subject\": \"[extracted_from_job_description]\",\n  \"Gate Status\": \"[PASSED/FAILED]\",\n  \"Failed Gate Reason\": \"[detailed_explanation_if_failed]\",\n  \"Gate Details\": {\n    \"Experience Gate\": \"[PASSED/FAILED]\",\n    \"Education Gate\": \"[PASSED/FAILED]\",\n    \"Certification Gate\": \"[PASSED/FAILED]\",\n    \"Skills Gate\": \"[PASSED/FAILED]\"\n  },\n  \"Skills Matched\": [\n    \"[matched_skill_1]\",\n    \"[matched_skill_2]\",\n    \"[matched_skill_n]\"\n  ],\n  \"Skills Missing\": [\n    \"[missing_skill_1]\",\n    \"[missing_skill_2]\",\n    \"[missing_skill_n]\"\n  ],\n  \"Experience Summary\": \"[2-3_sentence_summary]\",\n  \"Education Match\": \"[detailed_education_assessment]\",\n  \"Scoring Breakdown\": {\n    \"Role Match\": \"[score_out_of_20]\",\n    \"Responsibility Match\": \"[score_out_of_20]\",\n    \"Core Skills Match\": \"[score_out_of_15]\",\n    \"Tools Tech Match\": \"[score_out_of_10]\",\n    \"Experience Relevance\": \"[score_out_of_15]\",\n    \"Education Match\": \"[score_out_of_10]\",\n    \"Profile Quality\": \"[score_out_of_10]\"\n  },\n  \"Relevancy Score\": \"[total_score_out_of_100]\",\n  \"Final Recommendation\": \"[RECOMMEND/CONSIDER/WEAK/REJECT]\",\n  \"Match Reasoning\": \"[detailed_explanation_of_recommendation]\",\n  \"Status\": \"[Shortlisted/Rejected]\",\n  \"Evaluation Date\": \"[current_date]\",\n  \"Evaluator\": \"DRDO_AI_Parser_v2.0\"\n}\n```\n\n## Quality Assurance & Validation\n\n### Pre-Processing Checks:\n1. Verify all input fields are populated\n2. Validate resume text quality and completeness\n3. Check job description for clear requirements and technical domain\n4. Extract Interview Subject from job description automatically\n\n### Post-Processing Validation:\n1. Verify all JSON fields are populated\n2. Check scoring logic consistency\n3. Validate recommendation alignment with score\n4. Ensure gate status matches final recommendation\n\n### Error Handling:\n- Handle incomplete resumes gracefully\n- Provide clear explanations for failed gates\n- Log any parsing errors or ambiguities\n- Maintain consistent scoring across evaluations\n\n## Candidate ID Auto-Generation\n\n### Auto-Assignment Method: **Random 6-Digit Number**\n```\nFormat: C-XXXXXX (where X = random digit 0-9)\nExamples: C-847392, C-156408, C-923471\nImplementation: Generate random number between 100000-999999\n```\n\n### Duplicate Prevention:\n- **Check existing IDs**: Verify generated ID doesn't already exist in database\n- **Retry Logic**: If duplicate found, generate new random ID\n- **Maximum Attempts**: Try up to 5 times before using timestamp fallback\n\n### Implementation Instructions:\n```\n1. Generate random 6-digit number between 100000-999999\n2. Format as \"C-XXXXXX\"\n3. Check against existing candidate database (if available)\n4. If duplicate exists, generate new random number\n5. If no duplicate check available, proceed with generated ID\n```\n\n## Special Instructions\n- Use \"Not Specified\" for unavailable data\n- Do not make assumptions about missing details\n- Flag incomplete resumes in match reasoning\n\n### For Ambiguous Information:\n- Use best judgment based on context\n- Provide explanation in match reasoning\n- Consider multiple interpretations if necessary\n\n### For Edge Cases:\n- Handle non-traditional career paths\n- Consider equivalent experience/education\n- Account for career transitions and gaps\n- Evaluate potential over traditional metrics\n\n## Performance Optimization\n\n### Consistency Requirements:\n- Apply same evaluation criteria across all candidates\n- Use standardized scoring methodology\n- Maintain objective assessment approach\n- Document any subjective decisions\n\n### Speed & Accuracy:\n- Process resume efficiently without compromising accuracy\n- Prioritize critical information extraction\n- Provide comprehensive but concise evaluations\n- Ensure JSON output is properly formatted\n\nThis enhanced framework provides a comprehensive, systematic approach to resume evaluation specifically tailored for DRDO recruitment requirements, ensuring fair, consistent, and thorough candidate assessment."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1380,
+        315
+      ],
+      "id": "f6bb4c59-ba86-477c-b8b4-144d74a59e71",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "I3pKAH0Qq6diIRK6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const driveData = items[0].json;\nconst aiMessage = items[1].json.message?.content ?? \"\";\n\nlet parsedAI = null;\n\n// Try direct JSON parse first\ntry {\n  parsedAI = JSON.parse(aiMessage);\n} catch (err) {\n  // If direct parse fails, try to extract from backtick format\n  const jsonMatch = aiMessage.match(/```json([\\s\\S]*?)```/);\n  \n  if (jsonMatch) {\n    try {\n      parsedAI = JSON.parse(jsonMatch[1].trim());\n    } catch (innerErr) {\n      throw new Error(\"Backtick-wrapped block exists but is not valid JSON: \" + innerErr.message);\n    }\n  } else {\n    throw new Error(\"OpenAI response is not valid JSON and not wrapped in ```json``` block.\\n\\nResponse Content:\\n\" + aiMessage);\n  }\n}\n\n// Add Drive metadata\nparsedAI.resume_drive_link = driveData.resume_drive_link;\nparsedAI.file_name = driveData.file_name;\nparsedAI.mime_type = driveData.mime_type;\nparsedAI.drive_file_id = driveData.id;\n\n// Include email from Drive data\nparsedAI.email = driveData.email;\n\nreturn [\n  {\n    json: parsedAI\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        265
+      ],
+      "id": "f471b50a-a3a7-483e-b1fc-502ee4ee099e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dc299bab-2082-4e8c-bbae-7226f0ce7945",
+              "leftValue": "={{ $json[\"Relevancy Score\"] }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -564,
+        265
+      ],
+      "id": "bc4e90f9-405d-4cb5-85d1-9e23f3f4c885",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "resume",
+        "name": "={{ $json.name }}_Resume(Original)",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1odJpovNLuRAGrto3GzOvblFzo3hjjHGf",
+          "mode": "list",
+          "cachedResultName": "Database_Job_Posting_Resume",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1odJpovNLuRAGrto3GzOvblFzo3hjjHGf"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1600,
+        115
+      ],
+      "id": "2ee53158-39ae-4f7e-af2c-abe5c90488f6",
+      "name": "Google Drive1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "4rXe1GCjXh81ZB1h",
+          "name": "Google Drive account 4"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1004,
+        265
+      ],
+      "id": "202965fa-e25e-4da6-bcd0-df76caf2e839",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      resume_drive_link: $json.webViewLink,\n      file_name: $json.name,\n      mime_type: $json.mimeType,\n      id: $json.id,\n      email:$('Formatting').first().json.email\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1302,
+        115
+      ],
+      "id": "e6111041-ee7a-437d-b8cd-49ae51fffe2d",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.drive_file_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -344,
+        365
+      ],
+      "id": "b5d7bce3-9e63-4003-ad4c-b79d47f71673",
+      "name": "Resume Delition",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "4rXe1GCjXh81ZB1h",
+          "name": "Google Drive account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "18YPihUFPrXowBk_IczLwqmLRtJ_wP0UoZnyg6hnCk_s",
+          "mode": "list",
+          "cachedResultName": "DRDO_Candidates_Evaluated_Template",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18YPihUFPrXowBk_IczLwqmLRtJ_wP0UoZnyg6hnCk_s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1443221608,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18YPihUFPrXowBk_IczLwqmLRtJ_wP0UoZnyg6hnCk_s/edit#gid=1443221608"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Candidate ID": "={{ $json[\"Candidate ID\"] }}",
+            "Full Name": "={{ $json[\"Full Name\"] }}",
+            "Email": "={{ $json.Email }}",
+            "Phone Number": "={{ $json[\"Phone Number\"] }}",
+            "Highest Degree": "={{ $json[\"Highest Degree\"] }}",
+            "Discipline / Stream": "={{ $json[\"Discipline / Stream\"] }}",
+            "Specialization / Thesis Title": "={{ $json[\"Specialization / Thesis Title\"] }}",
+            "Institution": "={{ $json.Institution }}",
+            "Total Experience (years)": "={{ $json[\"Total Experience (years)\"] }}",
+            "Project Titles / Domains": "={{ $json[\"Project Titles / Domains\"] }}",
+            "Software / Tools": "={{ $json[\"Software / Tools\"] }},{{ $json[\"Programming Languages\"] }}",
+            "Extracted Keywords": "={{ $json[\"Extracted Keywords\"] }}",
+            "Subject Area Tags": "={{ $json[\"Subject Area Tags\"] }}",
+            "Interview Subject": "={{ $json[\"Interview Subject\"] }}",
+            "Gate Status": "={{ $json[\"Gate Status\"] }}",
+            "Failed Gate Reason": "={{ $json[\"Failed Gate Reason\"] }}",
+            "Skills Matched": "={{ $json[\"Skills Matched\"] }}",
+            "Skills Missing": "={{ $json[\"Skills Missing\"] }}",
+            "Experience Summary": "={{ $json[\"Experience Summary\"] }}",
+            "Education Match": "={{ $json[\"Education Match\"] }}",
+            "Relevancy Score": "={{ $json[\"Relevancy Score\"] }}/100",
+            "Final Recommendation": "={{ $json[\"Final Recommendation\"] }}",
+            "Match Reasoning": "={{ $json[\"Match Reasoning\"] }}",
+            "Status": "=new "
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Candidate ID",
+              "displayName": "Candidate ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Highest Degree",
+              "displayName": "Highest Degree",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Discipline / Stream",
+              "displayName": "Discipline / Stream",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Specialization / Thesis Title",
+              "displayName": "Specialization / Thesis Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Institution",
+              "displayName": "Institution",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Experience (years)",
+              "displayName": "Total Experience (years)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Project Titles / Domains",
+              "displayName": "Project Titles / Domains",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Software / Tools",
+              "displayName": "Software / Tools",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Extracted Keywords",
+              "displayName": "Extracted Keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject Area Tags",
+              "displayName": "Subject Area Tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Resume Link",
+              "displayName": "Resume Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Interview Subject",
+              "displayName": "Interview Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Gate Status",
+              "displayName": "Gate Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Failed Gate Reason",
+              "displayName": "Failed Gate Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills Matched",
+              "displayName": "Skills Matched",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills Missing",
+              "displayName": "Skills Missing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience Summary",
+              "displayName": "Experience Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Education Match",
+              "displayName": "Education Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Relevancy Score",
+              "displayName": "Relevancy Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Final Recommendation",
+              "displayName": "Final Recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Match Reasoning",
+              "displayName": "Match Reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -344,
+        165
+      ],
+      "id": "42762262-ee85-4993-8319-4957384d81b3",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ra9axiIfM0Hdxudg",
+          "name": "kulvanshWordpress"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1n7sH_Ua1r5FCGdVdm82mWUnm08nEuV8-0DsqPb48nyc",
+          "mode": "list",
+          "cachedResultName": "DRDO_Mock_Job_Descriptions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n7sH_Ua1r5FCGdVdm82mWUnm08nEuV8-0DsqPb48nyc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 448467024,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n7sH_Ua1r5FCGdVdm82mWUnm08nEuV8-0DsqPb48nyc/edit#gid=448467024"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        -1292,
+        535
+      ],
+      "id": "c0b9e3d7-5ed7-4bef-843f-33f5e5bb2ea6",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ra9axiIfM0Hdxudg",
+          "name": "kulvanshWordpress"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e6522d77-a406-455e-af3e-4312e186a376",
+              "leftValue": "={{ $json.body.Status }}",
+              "rightValue": "Shortlisted",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1600,
+        875
+      ],
+      "id": "fb919314-2fe2-4267-be10-6f3bdf3c32aa",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Please find below the candidate data. Use the Expert Scoring Matrix to identify the top 3 most relevant experts from the Expert Panel Sheet based on subject domain, tools, projects, experience, and availability. Return the panel as structured JSON.\n\n## Candidate Data:\n{\n  \"Candidate ID\": \"{{ $json.body['Candidate ID'] }}\",\n  \"Full Name\": \"{{ $json.body['Full Name'] }}\",\n  \"Interview Subject\": \"{{ $json.body['Interview Subject'] }}\",\n  \"Discipline / Stream\": \"{{ $json.body['Discipline / Stream'] }}\",\n  \"Specialization / Thesis Title\": \"{{ $json.body['Specialization / Thesis Title'] }}\",\n  \"Project Titles / Domains\": \"{{ $json.body['Project Titles / Domains'] }}\",\n  \"Software / Tools\": {{ $json.body['Software / Tools'] }},\n  \"Extracted Keywords\": {{ $json.body['Extracted Keywords'] }},\n  \"Subject Area Tags\": {{ $json.body['Subject Area Tags'] }}\n}\n\n✅ Return the output in ONLY this structured JSON format:\n\n```json\n{\n  \"candidate_id\": \"\",\n  \"candidate_name\": \"\",\n  \"interview_subject\": \"\",\n  \"matched_experts\": [\n    {\n      \"expert_id\": \" \",\n      \"expert_name\": \" \",\n      \"score\": \" \",\n      \"domain_match\": \" \",\n      \"tools_matched\": \" \",\n      \"experience_years\": \" \" ,\n      \"panel_experience\": \" \",\n      \"lab\": \" \",\n      \"availability\":  ,\n      \"reasoning\": \" \"\n    }\n    // up to 3 experts\n  ]\n}\n",
+        "options": {
+          "systemMessage": "=# System Prompt: RAC-DRDO Interview Panel Formation AI Agent\n\n## ROLE & CONTEXT\nYou are an intelligent interview panel formation agent for RAC-DRDO (Research & Development Organisation). Your primary function is to analyze candidate profiles and automatically select the most technically qualified experts from an available pool to form optimal interview panels.\n\n## CORE OBJECTIVE\nSelect 3-5 domain experts who demonstrate the strongest technical alignment with each candidate's expertise, ensuring comprehensive and fair evaluation coverage across their subject areas, tools, and project domains.\n\n---\n\n## INPUT DATA SPECIFICATIONS\n\n### Candidate Profile Structure:\n```\n- candidate_id: Unique identifier\n- full_name: Candidate's complete name\n- interview_subject: Primary subject/role being evaluated\n- discipline: Academic/technical discipline\n- specialization: Detailed area of focus/thesis title\n- project_domains: List of project areas and applications\n- tools_technologies: Technical tools, software, frameworks used\n- extracted_keywords: Key technical terms from profile\n- subject_area_tags: Standardized domain tags\n```\n\n### Expert Database Schema:\n```\n- expert_id: Unique identifier\n- full_name: Expert's complete name\n- domain_expertise: Primary technical domains\n- research_projects: Current and past research areas\n- tools_technologies: Technical proficiencies\n- experience_years: Years of relevant experience\n- prior_panel_experience: Boolean (previous panel participation)\n- department: Organizational unit/lab affiliation\n- availability: Boolean (current availability status)\n- conflict_tags: Areas where expert should recuse themselves\n```\n\n---\n\n## MATCHING ALGORITHM & SCORING FRAMEWORK\n\n### Scoring Breakdown (Total: 100 points)\n\n**1. Domain Expertise Alignment (30 points)**\n- Evaluate semantic similarity between candidate's discipline/specialization and expert's domain_expertise\n- Consider hierarchical relationships (e.g., \"Machine Learning\" encompasses \"Deep Learning\")\n- Award full points for exact matches, partial points for related domains\n\n**2. Technical Tools & Technologies (25 points)**\n- Compare candidate's tools_technologies with expert's technical proficiencies\n- Weight based on specificity (exact tool matches > general category matches)\n- Consider tool ecosystem relationships (e.g., TensorFlow expertise implies Python knowledge)\n\n**3. Research & Project Alignment (15 points)**\n- Analyze overlap between candidate's project_domains and expert's research_projects\n- Consider application domains, methodologies, and problem types\n- Look for complementary rather than identical experience\n\n**4. Departmental/Organizational Proximity (10 points)**\n- Same department/lab: 10 points\n- Related departments: 5-7 points\n- Different but relevant departments: 2-3 points\n\n**5. Experience Level Optimization (10 points)**\n- Ideal range: 5-25 years (10 points)\n- 3-5 years or 25+ years: 6-8 points\n- <3 years or >30 years: 2-4 points\n\n**6. Panel Experience Bonus (5 points)**\n- Has prior interview panel experience: +5 points\n- Ensures procedural knowledge and consistency\n\n**7. Availability & Conflict Resolution (5 points)**\n- Available and no conflicts: +5 points\n- Any conflicts or unavailability: 0 points\n\n---\n\n## SELECTION CRITERIA & CONSTRAINTS\n\n### Mandatory Requirements:\n- **Minimum 1 High-Match Expert**: At least one expert must score ≥80 points in combined domain and tools alignment\n- **Availability Filter**: Only consider experts with availability = true\n- **Conflict Avoidance**: Exclude experts whose conflict_tags intersect with candidate's subject_area_tags\n- **Panel Size**: Select exactly 3-5 experts (prefer 4-5 for comprehensive coverage)\n\n### Selection Strategy:\n1. **Primary Expert**: Highest overall score with strong domain/tools match\n2. **Complementary Experts**: Cover different aspects of candidate's profile\n3. **Diversity Balance**: Mix of experience levels and departmental perspectives\n4. **Backup Consideration**: Ensure selected experts don't all have identical expertise\n\n---\n\n## OUTPUT FORMAT SPECIFICATION\n\n**Response Structure (JSON):**\n```json\n{\n  \"candidate_id\": \"string\",\n  \"candidate_name\": \"string\", \n  \"interview_subject\": \"string\",\n  \"selection_summary\": {\n    \"total_experts_evaluated\": \"number\",\n    \"selection_rationale\": \"string (2-3 sentences)\",\n    \"coverage_assessment\": \"string (areas well covered vs gaps)\"\n  },\n  \"matched_experts\": [\n    {\n      \"expert_id\": \"string\",\n      \"expert_name\": \"string\",\n      \"overall_score\": \"number (0-100)\",\n      \"score_breakdown\": {\n        \"domain_alignment\": \"number (0-30)\",\n        \"tools_match\": \"number (0-25)\", \n        \"research_overlap\": \"number (0-15)\",\n        \"dept_proximity\": \"number (0-10)\",\n        \"experience_level\": \"number (0-10)\",\n        \"panel_experience\": \"number (0-5)\",\n        \"availability_bonus\": \"number (0-5)\"\n      },\n      \"key_matches\": {\n        \"domain_areas\": [\"list of matching domains\"],\n        \"tools_overlap\": [\"list of matching tools\"],\n        \"research_themes\": [\"list of overlapping research areas\"]\n      },\n      \"expert_profile\": {\n        \"experience_years\": \"number\",\n        \"department\": \"string\",\n        \"primary_expertise\": \"string\",\n        \"availability\": \"boolean\"\n      },\n      \"selection_reasoning\": \"string (2-3 sentences explaining why this expert was selected)\"\n    }\n  ],\n  \"panel_composition_analysis\": {\n    \"expertise_coverage\": \"string (assessment of how well panel covers candidate's areas)\",\n    \"experience_distribution\": \"string (mix of junior/senior experts)\",\n    \"potential_gaps\": \"string (any areas not well covered)\"\n  }\n}\n```\n\n---\n\n## OPERATIONAL GUIDELINES\n\n### Quality Assurance:\n- **Verification**: Ensure all selected experts meet minimum qualification thresholds\n- **Redundancy Check**: Avoid selecting experts with nearly identical profiles\n- **Coverage Validation**: Confirm major aspects of candidate's profile are covered\n\n### Edge Case Handling:\n- **Limited Pool**: If <3 qualified experts available, document constraints and recommend alternatives\n- **Tie Scenarios**: Use secondary criteria (department diversity, experience mix) as tiebreakers\n- **Specialty Areas**: For highly specialized candidates, prioritize domain match over tool alignment\n\n### Performance Optimization:\n- **Batch Processing**: Handle multiple candidates efficiently\n- **Scoring Consistency**: Apply uniform criteria across all evaluations\n- **Feedback Integration**: Learn from panel performance outcomes when available\n\n---\n\n## SUCCESS METRICS\n- **Technical Relevance**: Selected experts can meaningfully evaluate candidate's expertise\n- **Comprehensive Coverage**: Panel collectively covers all major aspects of candidate's profile\n- **Procedural Efficiency**: Selections are available, conflict-free, and appropriately experienced\n- **Fairness**: Consistent application of criteria across all candidates"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1348,
+        875
+      ],
+      "id": "f9319569-8a06-48dd-91e3-34185b42b38d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('If1').params.conditions }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1200,
+        1300
+      ],
+      "id": "531957d3-8ace-49af-8d30-e0f781c06c3c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1xT2jAHRJSFwgaIcx0GD2QhcXZ2o2LLm17V38URt3hH8",
+          "mode": "list",
+          "cachedResultName": "DRDO_Experts_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xT2jAHRJSFwgaIcx0GD2QhcXZ2o2LLm17V38URt3hH8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1530703713,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xT2jAHRJSFwgaIcx0GD2QhcXZ2o2LLm17V38URt3hH8/edit#gid=1530703713"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        -820,
+        1340
+      ],
+      "id": "50b63cda-cffd-4a90-a4c3-0c51127c1712",
+      "name": "Google Sheets2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ra9axiIfM0Hdxudg",
+          "name": "kulvanshWordpress"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1580,
+        1320
+      ],
+      "id": "2de882bf-323d-4cc3-b3f7-8144f1838a66",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "I3pKAH0Qq6diIRK6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawOutput =  $input.first().json.output?? \"\";\n\n// Clean wrapping ```json and ``` tags\nlet cleaned = rawOutput\n  .trim()\n  .replace(/^```json[\\r\\n]?/, '') // remove ```json\\n or ```json\n  .replace(/```$/, '')            // remove trailing ```\n  .replace(/\\\\n/g, '\\n');         // convert escaped \\n to actual newlines\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (error) {\n  throw new Error(\"❌ Failed to parse JSON: \" + error.message + \"\\nCleaned:\\n\" + cleaned);\n}\n\nreturn [{ json: parsed }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -940,
+        875
+      ],
+      "id": "165d34f1-5639-4396-ab78-b0268cc0ccaa",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kfTytwDG0nRgZto88v4obY8ztmP8TWFfl17K0nTzELA",
+          "mode": "list",
+          "cachedResultName": "Final Interview Panel",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kfTytwDG0nRgZto88v4obY8ztmP8TWFfl17K0nTzELA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kfTytwDG0nRgZto88v4obY8ztmP8TWFfl17K0nTzELA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Candidate ID": "={{ $json.candidate_id }}",
+            "Candidate Name": "={{ $json.candidate_name }}",
+            "Interview Subject": "={{ $json.interview_subject }}",
+            "Expert 1 ID": "={{ $json.matched_experts[0].expert_id }}",
+            "Expert 1 Name": "={{ $json.matched_experts[0].expert_name }}",
+            "Expert 1 Lab": "={{ $json.matched_experts[0].lab }}",
+            "Expert 1 Final Score": "={{ $json.matched_experts[0].score }}",
+            "Expert 1 Availability": "={{ $json.matched_experts[0].availability }}",
+            "Expert 1 Reasoning": "={{ $json.matched_experts[0].reasoning }}",
+            "Expert 2 ID": "={{ $json.matched_experts[1].expert_id }}",
+            "Expert 2 Name": "={{ $json.matched_experts[1].expert_name }}",
+            "Expert 2 Lab": "={{ $json.matched_experts[1].lab }}",
+            "Expert 2 Final Score": "={{ $json.matched_experts[1].score }}",
+            "Expert 2 Availability": "={{ $json.matched_experts[1].availability }}",
+            "Expert 2 Reasoning": "={{ $json.matched_experts[1].reasoning }}",
+            "Expert 3 ID": "={{ $json.matched_experts[2].expert_id }}",
+            "Expert 3 Name": "={{ $json.matched_experts[2].expert_name }}",
+            "Expert 3 Lab": "={{ $json.matched_experts[2].lab }}",
+            "Expert 3 Final Score": "={{ $json.matched_experts[2].score }}",
+            "Expert 3 Availability": "={{ $json.matched_experts[2].availability }}",
+            "Expert 3 Reasoning": "={{ $json.matched_experts[2].reasoning }}",
+            "Relevancy Score": "={{ $json.matched_experts[2].score }}",
+            "Final Recommendation": "={{ $json.matched_experts[2].reasoning }}",
+            "Position Applied For": "="
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Candidate ID",
+              "displayName": "Candidate ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Candidate Name",
+              "displayName": "Candidate Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Interview Subject",
+              "displayName": "Interview Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Position Applied For",
+              "displayName": "Position Applied For",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Relevancy Score",
+              "displayName": "Relevancy Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Final Recommendation",
+              "displayName": "Final Recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 1 ID",
+              "displayName": "Expert 1 ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 1 Name",
+              "displayName": "Expert 1 Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 1 Lab",
+              "displayName": "Expert 1 Lab",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 1 Final Score",
+              "displayName": "Expert 1 Final Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 1 Availability",
+              "displayName": "Expert 1 Availability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 1 Reasoning",
+              "displayName": "Expert 1 Reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 2 ID",
+              "displayName": "Expert 2 ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 2 Name",
+              "displayName": "Expert 2 Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 2 Lab",
+              "displayName": "Expert 2 Lab",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 2 Final Score",
+              "displayName": "Expert 2 Final Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 2 Availability",
+              "displayName": "Expert 2 Availability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 2 Reasoning",
+              "displayName": "Expert 2 Reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 3 ID",
+              "displayName": "Expert 3 ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 3 Name",
+              "displayName": "Expert 3 Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hii",
+              "displayName": "hii",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Expert 3 Lab",
+              "displayName": "Expert 3 Lab",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 3 Final Score",
+              "displayName": "Expert 3 Final Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 3 Availability",
+              "displayName": "Expert 3 Availability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expert 3 Reasoning",
+              "displayName": "Expert 3 Reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -720,
+        880
+      ],
+      "id": "30562054-d493-4b04-adee-0abfd2e34396",
+      "name": "Google Sheets3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ra9axiIfM0Hdxudg",
+          "name": "kulvanshWordpress"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1820,
+        875
+      ],
+      "id": "f451f68c-7fa8-4e8b-8deb-b4affd7be83c",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "httpMethod": [
+          "POST"
+        ],
+        "path": "DrdoSheet",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2040,
+        875
+      ],
+      "id": "ae9969e0-9059-4924-9857-15169d75b40f",
+      "name": "Webhook",
+      "webhookId": "5754f9df-00db-4fae-9c2a-24634e16593b"
+    },
+    {
+      "parameters": {
+        "content": "these is Workflow !\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2300,
+        100
+      ],
+      "typeVersion": 1,
+      "id": "f2ac7367-01d4-40e3-a5cb-5a7b048a61c4",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from Resume": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract from Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resume Delition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "ai_tool": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ff571a1d-20bd-4292-a1b4-dd8ff6184fcb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39f7e2eed1d28e09b044954259fcfb7d68f3198cdbbe9bd064c7032570ea4c94"
+  },
+  "id": "GnXmLcUWNrSR2vTy",
+  "tags": []
+}

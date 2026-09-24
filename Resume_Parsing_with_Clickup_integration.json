@@ -1,0 +1,764 @@
+{
+  "name": "Resume Parsing with Clickup integration",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "XYZ PVT.ltd Job Openings",
+        "formDescription": "We are hiring developers for the upcoming project",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "placeholder": "Alex Girase",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "placeholder": "xyz@gmail.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Position Applied",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Frontend Developer"
+                  },
+                  {
+                    "option": "UI/UX Developer"
+                  },
+                  {
+                    "option": "Backend Developer"
+                  },
+                  {
+                    "option": "Data Engineer"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Resume",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".jpg, .png, .pdf",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -660,
+        100
+      ],
+      "id": "c7610bb6-8f62-401b-a6b6-076906b2c565",
+      "name": "On form submission",
+      "webhookId": "59b70d7a-b663-4056-9a8c-3a7e4bb5bea9",
+      "notesInFlow": true,
+      "notes": "Trigger node \nfill the form Details "
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "resume",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        200
+      ],
+      "id": "6c4580cd-b98f-415c-8e89-c0c5d4785daf",
+      "name": "Extract from Resume"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\n\nreturn [\n  {\n    json: {\n      name: input.json['Full Name'],\n      email: input.json.Email,\n      position: input.json['Position Applied'],\n      resume: {\n        filename: input.binary.Resume.fileName,\n        mimetype: input.binary.Resume.mimeType,\n        size: input.binary.Resume.fileSize\n      }\n    },\n    binary: {\n      resume: input.binary.Resume // 👈 This is the key line you're missing\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        100
+      ],
+      "id": "48029454-c6d4-421c-9ba5-22c4fe07d734",
+      "name": "Formatting"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a highly accurate and structured resume parser and job matcher.\nBelow is:\n- A candidate's resume text\n- The specific job position they applied for\n- A job description containing the role details\nYour task is to:\n1. Extract key details from the resume (such as name, email, phone, education, experience, and skills).\n2. Compare the candidate ONLY against the job role they applied for.\n3. Apply the Critical Qualification Gates first - if any gate fails, immediately assign score 0.\n4. If all gates pass, then apply the detailed scoring matrix.\n5. Identify matched vs missing skills.\n6. Provide a fit score from 0 to 100 using the scoring criteria below.\n7. Return all results in the following structured JSON format.\n---\n## Position Applied For:\n{{ $('On form submission').item.json['Position Applied'] }}\n---\n## Resume Text:\n{{ $json.text }}\n---\n## Job Description:\n🚀 Hiring:  Data Engineer (Databricks, PySpark) 🚀\n📍 Location: Bangalore, Pune, Gurgaon, Navi Mumbai\n💼 Work Mode: Hybrid\n🕑 Experience: 4-8 Years\n📅 Notice Period: Immediate to 30 days\n\nAbout the Role:\nWe’re looking for a skilled Senior Data Engineer to join Bizmetric! If you’re passionate about building and optimizing data pipelines using Databricks and PySpark, and have experience with Azure or AWS, we want to hear from you!\n\nKey Responsibilities:\n\nDevelop scalable data pipelines using Databricks & PySpark\nCollaborate with cross-functional teams to deliver data solutions\nOptimize ETL processes for performance and reliability\nEnsure data quality and governance across projects\nDeploy and manage data solutions on cloud platforms (Azure/AWS)\n\nRequirements:\n\nMinimum 4+ years of experience in Data Engineering\nExpertise in Databricks, PySpark, Python, SQL, and cloud platforms (Azure/AWS)\nStrong knowledge of data warehousing, data integration, and governance\n\n\n\n---\n## 🎯 Comprehensive HR Resume Evaluation Matrix with Strict Qualification Gates\n\n## 🚨 CRITICAL QUALIFICATION GATES (Must Pass ALL to Proceed)\n\n### GATE 1: Experience Requirements\n- HARD REQUIREMENT: If JD specifies minimum years of experience (e.g., \"4+ years required\")\n  - ✅ PASS: Candidate meets or exceeds requirement\n  - 🚫 FAIL: Candidate has less than required → **IMMEDIATE REJECTION (Score = 0)\n  - 📝 Note: No partial credit for \"close enough\" experience\n\n### GATE 2: Education Requirements\n- HARD REQUIREMENT: If JD specifies mandatory education (e.g., \"Bachelor's degree required\", \"Engineering degree mandatory\")\n  - ✅ PASS: Candidate has required degree or higher\n  - 🚫 FAIL: Missing mandatory education → **IMMEDIATE REJECTION (Score = 0)\n  - 📝 Exception: \"Equivalent experience\" clause in JD allows experience substitution\n\n### GATE 3: Certification Requirements\n- HARD REQUIREMENT: If JD lists mandatory certifications (e.g., \"PMP certification required\", \"AWS certified\")\n  - ✅ PASS: Candidate has required active certifications\n  - 🚫 FAIL: Missing mandatory certifications → **IMMEDIATE REJECTION (Score = 0)\n\n### GATE 4: Critical Technical Skills\n- HARD REQUIREMENT: If JD marks skills as \"MUST HAVE\" or \"MANDATORY\"\n  - ✅ PASS: Candidate demonstrates proficiency in ALL mandatory skills\n  - ⚠ PENALTY: Missing any mandatory skill → **SCORE PENALTY (Score = -15)\n - 📝 Note: This gate does not cause immediate rejection but impacts final score\n### GATE 5: Experience Range Compliance\n- SOFT REQUIREMENT: If JD specifies experience range (e.g., \"4-8 years required\")\n  - ✅ PASS: Candidate falls within specified range → No penalty\n  - ⚠ PENALTY: Candidate exceeds maximum range → SCORE PENALTY (-10 to -20 points)\n  - 📝 Note: This gate does not cause immediate rejection but impacts final score\n\n---\n\n## 📊 SCORING MATRIX (Only Applied After Passing All Gates)\n\n### 1. Role Match (20 points)\n- 20 points: Exact role title match (e.g., \"Senior Data Engineer\" = \"Senior Data Engineer\")\n- 15 points: Role title with level variation (e.g., \"Data Engineer\" vs \"Senior Data Engineer\")\n- 10 points: Similar role, different title (e.g., \"Data Analyst\" vs \"Data Engineer\")\n- 5 points: Related role, same domain (e.g., \"ETL Developer\" vs \"Data Engineer\")\n- 0 points: Completely different role/domain\n\n### 2. Responsibility Match (20 points)\n- 20 points: 80-100% of JD responsibilities clearly demonstrated\n- 15 points: 60-79% of JD responsibilities matched\n- 10 points: 40-59% of JD responsibilities matched\n- 5 points: 20-39% of JD responsibilities matched\n- 0 points: <20% of JD responsibilities matched\n\n### 3. Skill & Tool Match (25 points)\n#### Technical Skills Breakdown:\n- Core Skills (15 points): Primary technologies mentioned in JD\n  - 15 points: 90-100% match\n  - 10 points: 70-89% match\n  - 5 points: 50-69% match\n  - 0 points: <50% match\n\n- Supporting Tools (10 points): Secondary tools, frameworks, methodologies\n  - 10 points: 90-100% match\n  - 7 points: 70-89% match\n  - 3 points: 50-69% match\n  - 0 points: <50% match\n\n### 4. Experience Quality & Relevance (15 points)\n#### Domain Experience:\n- 15 points: >3 years in exact same domain/industry with similar complexity\n- 12 points: 2-3 years in same domain OR >3 years in closely related domain\n- 8 points: 1-2 years in same domain OR 2-3 years in related domain\n- 4 points: <1 year in same domain OR 1-2 years in related domain\n- 0 points: No relevant domain experience\n\n### 5. Educational Background Match (10 points)\n- 10 points: Highly relevant degree + additional relevant qualifications\n- 8 points: Highly relevant degree (e.g., CS for developer, Engineering for technical roles)\n- 6 points: Related degree (e.g., IT, Mathematics for technical roles)\n- 4 points: Somewhat related degree with relevant coursework\n- 2 points: Unrelated degree but relevant certifications/training\n- 0 points: No relevant education or training\n\n### 6. Profile Summary & Communication (10 points)\n- 10 points: Excellent communication, role-specific, quantified achievements\n- 8 points: Good communication, role-focused, some achievements mentioned\n- 6 points: Average communication, mentions relevant experience\n- 4 points: Basic communication, generic but relevant\n- 2 points: Poor communication, vague, minimal relevance\n- 0 points: Very poor communication, completely generic, or irrelevant\n\n---\n\n## 📋 EVALUATION PROCESS\n\n### Step 1: Pre-Qualification Check\n1. Run through all 5 Critical Qualification Gates\n2. If ANY hard gate (Gates 1-4) fails → IMMEDIATE REJECTION (Score = 0)\n3. If Gate 5 (Experience Range) results in penalty → Apply score penalty\n4. Log specific reason for rejection or penalty applied\n\n### Step 2: Base Scoring Calculation\n*INSTRUCTIONS FOR MODEL:*\n1. *Calculate Raw Score:* Add up points from all 6 scoring categories (maximum 100 points)\n   - Role Match: ___/20 points\n   - Responsibility Match: ___/20 points  \n   - Skill & Tool Match: ___/25 points\n   - Experience Quality: ___/15 points\n   - Educational Background: ___/10 points\n   - Profile Summary: ___/10 points\n   - *Raw Total: ___/100 points*\n\n2. *Apply Gate Penalties:*\n   - If Gate 4 penalty: Subtract 15 points\n   - If Gate 5 penalty: Subtract 10-20 points (based on severity)\n   - *Final Score = Raw Total - Penalties*\n   - *Minimum Final Score: 0 (cannot go below zero)*\n\n3. *Score Validation:*\n   - Ensure final score is between 0-100\n   - Round to nearest whole number\n\n### Step 3: Final Classification & Recommendation\n*CLASSIFICATION RULES:*\n- *85-100 points:* EXCELLENT MATCH\n  - Recommendation: \"RECOMMEND\" \n  - Action: Priority Interview - Fast-track this candidate\n\n- *70-84 points:* GOOD MATCH  \n  - Recommendation: \"RECOMMEND\"\n  - Action: Standard Interview - Strong candidate\n\n- *55-69 points:* ACCEPTABLE MATCH\n  - Recommendation: \"CONSIDER\"\n  - Action: Interview if candidate pool is limited\n\n- *35-54 points:* WEAK MATCH\n  - Recommendation: \"WEAK\" \n  - Action: Reject unless no other options\n\n- *0-34 points:* POOR MATCH\n  - Recommendation: \"REJECT\"\n  - Action: Do not proceed with candidate\n\n*DECISION LOGIC:*\n- Scores 70+ = Strong candidates worth interviewing\n- Scores 55-69 = Backup candidates, consider based on applicant pool\n- Scores below 55 = Not recommended for this role\n\n---\nnote : Always output in these format only\n## Output Format:\njson\n{\n  \"full_name\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"role_matched\": \"{{ $('On form submission').item.json['Position Applied'] }}\",\n  \"gate_status\": \"PASSED/FAILED\",\n  \"failed_gate\": \"\",\n  \"experience_penalty_applied\": false,\n  \"penalty_reason\": \"\",\n  \"skills_matched\": [],\n  \"skills_missing\": [],\n  \"experience_summary\": \"\",\n  \"education\": \"\",\n  \"job_match_score\": 0,\n  \"match_reasoning\": \"\",\n  \"recommendation\": \"RECOMMEND/CONSIDER/WEAK/REJECT\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        0,
+        200
+      ],
+      "id": "7c268f90-307c-42f0-adce-9117150488f8",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "I3pKAH0Qq6diIRK6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const driveData = items[0].json;\nconst aiMessage = items[1].json.message?.content ?? \"\";\n\nlet parsedAI = null;\n\n// Try direct JSON parse first\ntry {\n  parsedAI = JSON.parse(aiMessage);\n} catch (err) {\n  // If direct parse fails, try to extract from backtick format\n  const jsonMatch = aiMessage.match(/```json([\\s\\S]*?)```/);\n  \n  if (jsonMatch) {\n    try {\n      parsedAI = JSON.parse(jsonMatch[1].trim());\n    } catch (innerErr) {\n      throw new Error(\"Backtick-wrapped block exists but is not valid JSON: \" + innerErr.message);\n    }\n  } else {\n    throw new Error(\"OpenAI response is not valid JSON and not wrapped in ```json``` block.\\n\\nResponse Content:\\n\" + aiMessage);\n  }\n}\n\n// Add Drive metadata\nparsedAI.resume_drive_link = driveData.resume_drive_link;\nparsedAI.file_name = driveData.file_name;\nparsedAI.mime_type = driveData.mime_type;\nparsedAI.drive_file_id = driveData.id;\n\n// Include email from Drive data\nparsedAI.email = driveData.email;\n\nreturn [\n  {\n    json: parsedAI\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        596,
+        100
+      ],
+      "id": "db2f5a7f-917e-466f-ba9b-92571c5e14f9",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dc299bab-2082-4e8c-bbae-7226f0ce7945",
+              "leftValue": "={{ $json.job_match_score }}",
+              "rightValue": 50,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        100
+      ],
+      "id": "1f6f10cb-0230-456c-8c55-c360cc7efb3e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "resume",
+        "name": "={{ $json.name }}_Resume(Original)",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1odJpovNLuRAGrto3GzOvblFzo3hjjHGf",
+          "mode": "list",
+          "cachedResultName": "Database_Job_Posting_Resume",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1odJpovNLuRAGrto3GzOvblFzo3hjjHGf"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -220,
+        0
+      ],
+      "id": "af580250-237e-49da-8014-af08e45c30cd",
+      "name": "Google Drive1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "4rXe1GCjXh81ZB1h",
+          "name": "Google Drive account 4"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        376,
+        100
+      ],
+      "id": "24c06bbf-7be4-40df-9409-ed2acf1bb1b3",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      resume_drive_link: $json.webViewLink,\n      file_name: $json.name,\n      mime_type: $json.mimeType,\n      id: $json.id,\n      email:$('Formatting').first().json.email\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        78,
+        0
+      ],
+      "id": "b460919b-572e-4e8e-941d-e98ec81c46d8",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11WDZTUKweTBd2PCQgqmDqPma43hX_EqC3N3vASlcY84",
+          "mode": "list",
+          "cachedResultName": "shortlisted_for_interview",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11WDZTUKweTBd2PCQgqmDqPma43hX_EqC3N3vASlcY84/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11WDZTUKweTBd2PCQgqmDqPma43hX_EqC3N3vASlcY84/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $json.full_name }}",
+            "Email": "={{ $json.email }}",
+            "Skills Matched": "={{ $json.skills_matched.join(\",\") }}",
+            "Skills Missing": "={{ $json.skills_missing.join(\",\") }}",
+            "Experience Summary": "={{ $json.experience_summary }}",
+            "Education": "={{ $json.education }}",
+            "Match Score": "={{ $json.job_match_score }}/100",
+            "Match Reasoning": "={{ $json.match_reasoning }}",
+            "Role Applied": "={{ $json.role_matched }}",
+            "Resume Link": "={{ $json.resume_drive_link }}",
+            "Recommendation": "={{ $json.recommendation }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Role Applied",
+              "displayName": "Role Applied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Skills Matched",
+              "displayName": "Skills Matched",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills Missing",
+              "displayName": "Skills Missing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience Summary",
+              "displayName": "Experience Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Education",
+              "displayName": "Education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Match Score",
+              "displayName": "Match Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Match Reasoning",
+              "displayName": "Match Reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Resume Link",
+              "displayName": "Resume Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Recommendation",
+              "displayName": "Recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1036,
+        -100
+      ],
+      "id": "545ada59-93e0-4937-855b-f31247ab3963",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "L8rMitnbGc6kfR7b",
+          "name": "Google Sheets account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.drive_file_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1036,
+        100
+      ],
+      "id": "5a7c74e9-f3ff-4c90-b052-5af11a4e4a28",
+      "name": "Resume Delition",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "4rXe1GCjXh81ZB1h",
+          "name": "Google Drive account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const taskId = $input.first().json.id;\nconst customFields = $input.first().json.custom_fields;\n\nconst parsed = $('Code').first().json;\n\n// Helper function to stringify arrays\nconst asText = (val) => Array.isArray(val) ? val.join(', ') : val;\n\nconst updates = [\n  \n  { field_id: customFields[0]?.id, value: asText(parsed.email) },\n  \n  { field_id: customFields[1]?.id, value: asText(parsed.match_reasoning) },\n  \n];\n\nreturn updates.map(update => ({\n  json: {\n    task_id: taskId,\n    field_id: update.field_id,\n    value: update.value\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1476,
+        300
+      ],
+      "id": "c8a7a940-2846-4723-a233-70e5b363677f",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0b6bb76e-3681-4124-84ef-3bf740ebbf7e",
+              "name": "field_id",
+              "value": "={{ $json.field_id }}",
+              "type": "string"
+            },
+            {
+              "id": "fd7bd893-a628-4f74-8aa0-bd142e252340",
+              "name": "value",
+              "value": "={{ $json.value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1916,
+        225
+      ],
+      "id": "09e82136-7e57-4ed5-9be8-603d547a0cb5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.clickup.com/api/v2/task/{{ $('ClickUp1').item.json.id }}/field/{{ $json.field_id }} ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "pk_206619223_XXBNQQ4XYLAD0LLBX4URG8QDF2WSGB1B"
+            },
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "value",
+              "value": "={{ $json.value }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2136,
+        300
+      ],
+      "id": "a3c4f346-7ae8-4d8c-ab0c-3cde17c5fa51",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bf993155-8a34-4eb8-9d56-c47aa3027090",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "be0ddb0c-1358-44cb-a6cf-d98738515d6b",
+              "name": "custom_fields[0]",
+              "value": "={{ $json.custom_fields[0] }}",
+              "type": "object"
+            },
+            {
+              "id": "da8f81ac-50d9-4d8f-9712-4f00d83edba9",
+              "name": "custom_fields[1]",
+              "value": "={{ $json.custom_fields[1] }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1256,
+        300
+      ],
+      "id": "37b3abbe-4752-46c9-9b9d-e9cfa79f0a3a",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1696,
+        300
+      ],
+      "id": "d5c781db-43f3-4b34-b3f7-ed09b8329a4f",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "team": "90161117282",
+        "space": "90164430527",
+        "folder": "90165686963",
+        "list": "901609489466",
+        "name": "={{ $json.full_name }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.clickUp",
+      "typeVersion": 1,
+      "position": [
+        1036,
+        300
+      ],
+      "id": "fb171c01-2f78-49fd-ac2d-21201910a659",
+      "name": "ClickUp1",
+      "credentials": {
+        "clickUpOAuth2Api": {
+          "id": "vz0sdBQgHl8biGYB",
+          "name": "KartikClickup"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract from Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from Resume": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ClickUp1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resume Delition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ClickUp1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3a78cdea-1519-4594-90ed-58e0688f111d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39f7e2eed1d28e09b044954259fcfb7d68f3198cdbbe9bd064c7032570ea4c94"
+  },
+  "id": "C3DwmBPKEgIvHNVi",
+  "tags": []
+}

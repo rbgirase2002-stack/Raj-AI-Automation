@@ -1,0 +1,350 @@
+{
+  "name": "Linkdin Scraper",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Input is an array with an \"output\" key that contains a JSON string\nconst input = items[0].json.output;\n\n// Parse the string into an object\nconst parsed = JSON.parse(input);\n\n// Return the parsed object as separate JSON\nreturn [\n  {\n    json: {\n      location: parsed.location,\n      business: parsed.business,\n      job_title: parsed.job_title\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -40
+      ],
+      "id": "e1e3c1e7-dce3-4e3a-a3e3-fe2f7807d987",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/<Add Token>",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"cookie\": [\n        {\n            \"domain\": \"app.apollo.io\",\n            \"hostOnly\": true,\n            \"httpOnly\": false,\n            \"name\": \"app_token\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"a8f9a2447c986f7d94928758806aea5a\"\n        },\n        {\n            \"domain\": \".apollo.io\",\n            \"expirationDate\": 1767254148.220131,\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"zp_device_id\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"eyJfcmFpbHMiOnsibWVzc2FnZSI6IklrMVVZekZOVkdOM1RXcEZNRTlZZUZOVU0xVjBZVlZLUzFwWWVFNWhWMDU1WWpOT2RscHVVV2RTVjFKdVdsaDRXR0ZYTld0aU0yUjZaa1JGZDJaSVVYaE5NbEY0VGxSRk1tRkVTbVpQUjFKb1dWZFpNazFVVlhsT2VtTjRXREpSTkZsVVNtdFpWRTV0VDFSU2FscEJQVDBpIiwiZXhwIjoiMjAyNi0wMS0wMVQwNzo1NTo0OS43NzZaIiwicHVyIjoiY29va2llLnpwX2RldmljZV9pZCJ9fQ%3D%3D--69c01dadc29bae7800ef64355dd8556e77de9637\"\n        },\n        {\n            \"domain\": \".apollo.io\",\n            \"expirationDate\": 1751703934,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"_hjSession_3601622\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"eyJpZCI6IjQ4M2YxNDY5LTcwZjctNDQ3ZC05MDFlLTgzZmUwYjZhMDE4YyIsImMiOjE3NTE3MDIxMzQ1NTEsInMiOjAsInIiOjAsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjoxLCJzcCI6MH0=\"\n        },\n        {\n            \"domain\": \".apollo.io\",\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"dwnjrn\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"224a021c494c03da5671d43e921d9e1e1c9f33cc9b996d6353deca941e55f435\"\n        },\n        {\n            \"domain\": \".apollo.io\",\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"ZP_LATEST_LOGIN_PRICING_VARIANT\",\n            \"path\": \"/\",\n            \"sameSite\": \"lax\",\n            \"secure\": true,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"25Q2_UC_AB59\"\n        },\n        {\n            \"domain\": \".apollo.io\",\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"ZP_Pricing_Split_Test_Variant\",\n            \"path\": \"/\",\n            \"sameSite\": \"lax\",\n            \"secure\": true,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"25Q2_UC_AB59\"\n        },\n        {\n            \"domain\": \".apollo.io\",\n            \"expirationDate\": 1785398133.212898,\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"dwndvc\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"985ba8da23575b48f0db7a30d2cac351e9b99326a3064e073abf71bc39efc4d3\"\n        },\n        {\n            \"domain\": \".apollo.io\",\n            \"expirationDate\": 1751703933.069652,\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"__cf_bm\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"LtirIZR2uXfjprwX43dEZ7Cksw1ah_KCn9.UrXHynG0-1751702133-1.0.1.1-j3ASsEIkYMZDf4.ERaE2Idb8VBc2RmLxI5qKofGu3t9rFIy1uQFaPTRQjaHbrTrx6X8x_fV_bIRuMDwVIDaY9gtDpL8OIUj0_aWLwXrZSZA\"\n        },\n        {\n            \"domain\": \".apollo.io\",\n            \"expirationDate\": 1783238149,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"_hjSessionUser_3601622\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"eyJpZCI6IjE0MmJjYmMyLWI4MTQtNTg5Mi1iYjdjLWEzNjdlNGVkMTJlYiIsImNyZWF0ZWQiOjE3NTE3MDIxMzQ1NTAsImV4aXN0aW5nIjp0cnVlfQ==\"\n        },\n        {\n            \"domain\": \"app.apollo.io\",\n            \"hostOnly\": true,\n            \"httpOnly\": true,\n            \"name\": \"_leadgenie_session\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"7iUJ26nZLvRCj6qMM1iNdjrQqkPWDx%2FFxmmBcNmEZf2GgyXNPEO0GJGzIOwkxPrv3PVyvHC9wrL3NV6zTCghxAPIUJJOb9AN41c%2FCbsSANV2eDbtrXKjL8sZuA0eamgji2tRkGNXzwJ%2BtX6ciTScD0DK%2FYDsyoNpeBU%2Fe06BPSomHErO9oJ%2FAzwJPu4fX1I8v6z9B%2FFRS58LMPW0q4Yzj5iksuNtNKBmPb0LW%2B7BcuGdRZhYgfwLtfI0P14XyIj0YZU%2F82Txl4chnKE6yl0YWXJ0dg%2FejtX8l8M%3D--X6yIXHmoB79YGPJN--x9At3aZSSiaiAkZn8vdqpQ%3D%3D\"\n        },\n        {\n            \"domain\": \".apollo.io\",\n            \"expirationDate\": 1754380548.220037,\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"remember_token_leadgenie_v2\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"eyJfcmFpbHMiOnsibWVzc2FnZSI6IklqWTROamhrWVRnMVkyRTBaV1EyTURBeE9UTXdOamxoWWw5c1pXRmtaMlZ1YVdWamIyOXJhV1ZvWVhOb0lnPT0iLCJleHAiOiIyMDI1LTA4LTA1VDA3OjU1OjQ5Ljc2OVoiLCJwdXIiOiJjb29raWUucmVtZW1iZXJfdG9rZW5fbGVhZGdlbmllX3YyIn19--4ca710ce5aa1590b32c07374e36c457a227aca08\"\n        },\n        {\n            \"domain\": \"app.apollo.io\",\n            \"hostOnly\": true,\n            \"httpOnly\": false,\n            \"name\": \"X-CSRF-TOKEN\",\n            \"path\": \"/\",\n            \"sameSite\": \"lax\",\n            \"secure\": true,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"jDkbOj9Ocmr_lUP4fmZhknFXU0u32fN0t_eCEDsDN-v4zGPlByLlIAsV2ZK_8EoZSRt7jN1_DFKEIF3BF1wq0w\"\n        }\n    ],\n    \"count\": 25,\n    \"getEmails\": false,\n    \"guessedEmails\": true,\n    \"maxDelay\": 15,\n    \"minDelay\": 5,\n    \"searchUrl\": \"https://app.apollo.io/#/people?sortByField=recommendations_score&sortAscending=false&page=1&personTitles[]=scientist&personLocations[]=india&qOrganizationKeywordTags[]=defence%20research%20and%20development%20organisation&includedOrganizationKeywordFields[]=tags&includedOrganizationKeywordFields[]=name\",\n    \"startPage\": 1,\n    \"waitForVerification\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        776,
+        -40
+      ],
+      "id": "e39320b7-935c-4550-a362-6809848eb236",
+      "name": "HTTP Request",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0b9a2c05-f493-496b-824d-8b4bbbc1d602",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "39dcc2fe-3b19-427d-8c0a-08b8c7f88e95",
+              "name": "first_name",
+              "value": "={{ $json.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "fa359427-882e-4ea4-8751-896f94b9cfe8",
+              "name": "last_name",
+              "value": "={{ $json.last_name }}",
+              "type": "string"
+            },
+            {
+              "id": "41016a87-9192-44fd-af69-e14928370511",
+              "name": "linkedin_url",
+              "value": "={{ $json.linkedin_url }}",
+              "type": "string"
+            },
+            {
+              "id": "172de84d-fa2b-47b0-9a15-c77e24e0674b",
+              "name": "employment_history[0].organization_name",
+              "value": "={{ $json.employment_history[0].organization_name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        996,
+        -40
+      ],
+      "id": "3f034b1e-a06e-4181-8b01-a55dbb68c838",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -260,
+        -40
+      ],
+      "id": "a43a0963-badd-4760-b8bc-b3f2d4104c9a",
+      "name": "When chat message received",
+      "webhookId": "af0d296f-5171-43ce-b5ad-9463360365c0"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a data formatter.\nchat input: {{ $json.chatInput }}\n\n\nFrom the given input query, extract and return the values in the following **pure JSON object** format:\n\n{\n  \"location\": \"texas+united+states\",\n  \"business\": \"information+technology\",\n  \"job_title\": \"software+engineer\"\n}\n\n📌 Rules:\n- Join multi-word values using `+` (e.g., \"software engineer\" → \"software+engineer\").\n- Return ONLY the JSON object (no explanation, no markdown, no array).\n- Keys should always be: \"location\", \"business\", \"job_title\".\n\nNow, format this user input accordingly.\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        -40
+      ],
+      "id": "a06db261-ea89-43c7-bf1e-0d1522953e17",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -12,
+        180
+      ],
+      "id": "8d026f12-0b8f-4faf-a9a7-d9fc849bfdef",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "I3pKAH0Qq6diIRK6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        108,
+        180
+      ],
+      "id": "be328e92-4a90-4452-8396-00dd4d2c5b01",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the input JSON\nconst input = items[0].json;\n\n// Convert + to %20 for URL encoding\nconst jobTitle = input.job_title.replace(/\\+/g, '%20');\nconst location = input.location.replace(/\\+/g, '%20');\nconst business = input.business.replace(/\\+/g, '%20');\n\n// Construct the final URL\nconst finalURL = `https://app.apollo.io/#/people?sortByField=recommendations_score&sortAscending=false&page=1&personTitles[]=${jobTitle}&personLocations[]=${location}&qOrganizationKeywordTags[]=${business}&includedOrganizationKeywordFields[]=tags&includedOrganizationKeywordFields[]=name`;\n\n// Return the final URL\nreturn [\n  {\n    json: {\n      finalURL\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        556,
+        -40
+      ],
+      "id": "5386c453-645b-4a80-97d0-961c9bd12731",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XSEATaUVQX3UE8ejPhgNfgO26_x4QVX3MFcElqXvRDE",
+          "mode": "list",
+          "cachedResultName": "Linkdin Scraper",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XSEATaUVQX3UE8ejPhgNfgO26_x4QVX3MFcElqXvRDE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XSEATaUVQX3UE8ejPhgNfgO26_x4QVX3MFcElqXvRDE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "first_name": "={{ $json.first_name }}",
+            "last_name": "={{ $json.last_name }}",
+            "linkedin_url": "={{ $json.linkedin_url }}",
+            "employment_history .organization_name": "={{ $json.employment_history[0].organization_name }}"
+          },
+          "matchingColumns": [
+            "first_name"
+          ],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "linkedin_url",
+              "displayName": "linkedin_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "employment_history .organization_name",
+              "displayName": "employment_history .organization_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1216,
+        -40
+      ],
+      "id": "1aa6bbec-b8ef-43d1-9188-433c41c10838",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ra9axiIfM0Hdxudg",
+          "name": "kulvanshWordpress"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4934c52d-01f4-4b2f-a43d-9a0015a171ef",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39f7e2eed1d28e09b044954259fcfb7d68f3198cdbbe9bd064c7032570ea4c94"
+  },
+  "id": "GdfkLDxOdlqGIdes",
+  "tags": []
+}

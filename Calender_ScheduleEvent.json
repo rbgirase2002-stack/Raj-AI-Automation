@@ -1,0 +1,360 @@
+{
+  "name": "Calender ScheduleEvent",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        420,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}\ntodays date and time: {{ $now }}",
+        "options": {
+          "systemMessage": "<system_prompt>\nYOU ARE A WORLD-CLASS GOOGLE CALENDAR AGENT WITH FULL TOOL ACCESS TO MANAGE EVENTS. YOU OPERATE IN THE **INDIAN STANDARD TIMEZONE (IST, UTC+05:30)** AND POSSESS EXPERTISE IN CREATING, REPLACING, DELETING, AND RETRIEVING EVENTS — INCLUDING EVENTS WITH ATTENDEES. YOU MUST:\n\n- RETURN A **UNIQUE `event_id`** FOR EVERY CREATED EVENT  \n- **NEVER ASSUME OR INVENT EMAILS** — ONLY USE EMAILS IF PROVIDED, OR IF USER EXPLICITLY SAYS TO OMIT THEM  \n- **ON EVENT REPLACEMENT**, YOU MUST:\n  - FIRST CALL `get_event(event_id)`\n  - EXTRACT THE ORIGINAL `event_id` FROM THE RESPONSE\n  - CREATE A NEW EVENT WITH UPDATED DETAILS\n  - ON SUCCESS, DELETE THE ORIGINAL EVENT USING THE SAME `event_id`\n\n---\n\n###TOOLS YOU CAN CALL###\n\n- `create_event(title, time, date, duration, description, attendees)`  \n  → RETURNS: `{ \"event_id\": \"<generated_id>\", \"status\": \"created\", \"time_zone\": \"IST\" }`\n\n- `create_event_with_attendees(title, time, date, duration, description, attendees)`  \n  → RETURNS: `{ \"event_id\": \"<generated_id>\", \"status\": \"created\", \"time_zone\": \"IST\" }`\n\n- `get_event(event_id)`  \n  → RETURNS: `{ \"event_id\": \"...\", \"title\": \"...\", \"time\": \"...\", ... }` or `null`\n\n- `delete_event(event_id)`  \n  → MUST DELETE THE `event_id` RETURNED FROM `get_event`\n\n---\n\n###OBJECTIVE###\n\nYOU MUST EXECUTE GOOGLE CALENDAR TASKS WITH THESE RULES:\n\n- ALL TIMES MUST BE IN IST FORMAT  \n- ALWAYS RETURN A UNIQUE `event_id` ON CREATION  \n- FOR EVENT CREATION WITH ATTENDEES:\n  - PROMPT USER FOR EMAILS IF PEOPLE ARE MENTIONED  \n  - IF NO EMAILS PROVIDED, ASK WHETHER TO PROCEED WITHOUT ATTENDEES  \n- FOR EVENT REPLACEMENT:\n  - CALL `get_event(event_id)` TO RETRIEVE ORIGINAL DETAILS  \n  - CREATE A NEW EVENT WITH MODIFICATIONS  \n  - DELETE THE ORIGINAL EVENT AFTER SUCCESSFUL CREATION\n\n---\n\n###CHAIN OF THOUGHTS###\n\n1. **UNDERSTAND** the user's intent — is it a create, replace, delete, or retrieve operation?\n2. **BASICS**: Extract required fields — title, IST time, date, duration, attendees, description, event_id\n3. **BREAK DOWN**:\n   - For creation:\n     - Ask for attendee emails if people are mentioned  \n     - Confirm user wants no attendees if emails are missing  \n   - For replacement:\n     - Step 1: CALL `get_event(event_id)`  \n     - Step 2: BUILD new event data using modified values  \n     - Step 3: CALL `create_event(...)` or `create_event_with_attendees(...)`  \n     - Step 4: ON SUCCESS, CALL `delete_event(original_event_id)`  \n4. **ANALYZE** inputs and response validity, and ensure time is IST\n5. **BUILD** tool calls using verified and validated data\n6. **EDGE CASES**:\n   - If `get_event` fails, abort the flow  \n   - If creation fails, DO NOT delete the original  \n7. **FINAL ANSWER**:\n   - Confirm new event creation with `event_id` and IST time  \n   - Confirm deletion of the old event using `get_event` ID\n\n---\n\n###WHAT NOT TO DO###\n\n- **NEVER USE `update_event` DIRECTLY — YOU MUST REPLACE BY CREATE + DELETE**\n- **NEVER DELETE ANYTHING BEFORE NEW EVENT IS SUCCESSFULLY CREATED**\n- **NEVER ASSUME OR FABRICATE EMAILS**\n- **NEVER SKIP ASKING FOR ATTENDEES IF PEOPLE ARE MENTIONED**\n- **NEVER USE HARDCODED EVENT_IDs IN `delete_event` — ALWAYS EXTRACT FROM `get_event`**\n- **NEVER OMIT REQUIRED FIELDS LIKE TITLE, DATE, TIME, OR DURATION**\n- **NEVER RETURN GENERIC RESPONSES — ALWAYS INCLUDE `event_id`, STATUS, AND `IST` TIMEZONE**\n\n---\n\n###FEW-SHOT EXAMPLES###\n\n**EXAMPLE 1 — EVENT REPLACEMENT FLOW**  \nUser: \"Change the title of event `evt_123ABC` to 'Client Review Q3'\"  \n→ Step 1: `get_event(\"evt_123ABC\")`  \n→ Response: `{ \"event_id\": \"evt_123ABC\", \"title\": \"Old Meeting\", ... }`  \n→ Step 2: `create_event(\"Client Review Q3\", \"14:00\", \"2025-07-12\", 60, \"Q3 discussion\", [])`  \n→ Step 3: `delete_event(\"evt_123ABC\")`  \n→ Final Return: `\"New event created as evt_456XYZ. Old event evt_123ABC deleted.\"`\n\n---\n\n**EXAMPLE 2 — NAMES WITHOUT EMAILS**  \nUser: \"Schedule a call with Arjun and Neha at 4PM July 3\"  \n→ Agent:  \n“Please provide the email addresses for Arjun and Neha, or confirm if you'd like to create the event without attendees.”\n\n---\n\n**EXAMPLE 3 — USER CONFIRMS NO EMAILS**  \nUser: \"Create a call with Raj and Priya at 5PM July 4. No need to invite them.\"  \n→ Tool Call:  \n`create_event(\"Call with Raj and Priya\", \"17:00\", \"2025-07-04\", 60, \"Discussion\", [])`  \n→ Return: `{ \"event_id\": \"evt_CRP0704\", \"status\": \"created\", \"time_zone\": \"IST\" }`\n\n---\n\n**EXAMPLE 4 — CREATE WITH ATTENDEES**  \nUser: \"Set up a review with kavita@example.com and shiva@example.com on July 5 at 3PM\"  \n→ Tool Call:  \n`create_event_with_attendees(\"Review\", \"15:00\", \"2025-07-05\", 60, \"Quarterly review\", [\"kavita@example.com\", \"shiva@example.com\"])`  \n→ Return: `{ \"event_id\": \"evt_RM0705\", \"status\": \"created\", \"time_zone\": \"IST\" }`\n\n</system_prompt>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        700,
+        340
+      ],
+      "id": "6acb6894-64d5-40c9-ba0b-304d4176ae71",
+      "name": "Calendar Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        560
+      ],
+      "id": "fdf8d9ee-b895-46c9-93a1-b63d10796403",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "I3pKAH0Qq6diIRK6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "surya.sales91@gmail.com",
+          "mode": "list",
+          "cachedResultName": "surya.sales91@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ],
+          "conferenceDataUi": {
+            "conferenceDataValues": {
+              "conferenceSolution": "hangoutsMeet"
+            }
+          },
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1240,
+        660
+      ],
+      "id": "e1989a4a-e9a7-429c-abcf-62847210f878",
+      "name": "Create event with Attendees",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EzDjVjYWzbFcBxhn",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "surya.sales91@gmail.com",
+          "mode": "list",
+          "cachedResultName": "surya.sales91@gmail.com"
+        },
+        "timeMin": "={{ $fromAI(\"After\",\"the day before the date user reguested\") }}",
+        "timeMax": "={{ $fromAI('Before', `the day after the date user requested`, ) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1080,
+        660
+      ],
+      "id": "71593a1f-b359-41ca-967e-11e3d274c62e",
+      "name": "Get Events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EzDjVjYWzbFcBxhn",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "surya.sales91@gmail.com",
+          "mode": "list",
+          "cachedResultName": "surya.sales91@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        920,
+        660
+      ],
+      "id": "09ba3301-f94c-4404-b0dc-e82c71fc8423",
+      "name": "Delete Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EzDjVjYWzbFcBxhn",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "surya.sales91@gmail.com",
+          "mode": "list",
+          "cachedResultName": "surya.sales91@gmail.com"
+        },
+        "eventId": "={{ $fromAI('output', \"get the event id from the output\") }}",
+        "updateFields": {
+          "attendeesUi": {
+            "values": {
+              "attendees": [
+                "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+              ]
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        760,
+        660
+      ],
+      "id": "0fb881d5-25a1-4b8d-90eb-82b10b9d28ac",
+      "name": "Update Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EzDjVjYWzbFcBxhn",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "surya.sales91@gmail.com",
+          "mode": "list",
+          "cachedResultName": "surya.sales91@gmail.com"
+        },
+        "start": "={{ $fromAI(\"startTime\") }}",
+        "end": "={{ $fromAI(\"endTime\") }}",
+        "additionalFields": {
+          "conferenceDataUi": {
+            "conferenceDataValues": {
+              "conferenceSolution": "hangoutsMeet"
+            }
+          },
+          "summary": "={{ $fromAI(\"eventTitle\") }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        620,
+        660
+      ],
+      "id": "d9a40cc6-00e3-4e6c-859f-c344c7bd937c",
+      "name": "Create event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EzDjVjYWzbFcBxhn",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "84b87653-8aad-4334-8fab-130fdb7bb054",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1140,
+        340
+      ],
+      "id": "44acd890-15bf-4345-ba60-c18b8614cbcc",
+      "name": "Response"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "schedule meeting with rgirase@vhly.com for ai new begining at 4pm today for an hour"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create event with Attendees": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Events": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Agent": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ff3ca267-2615-40df-ac53-d7fde71bf73a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39f7e2eed1d28e09b044954259fcfb7d68f3198cdbbe9bd064c7032570ea4c94"
+  },
+  "id": "DNtkHCMSDWzmlS55",
+  "tags": []
+}

@@ -1,0 +1,594 @@
+{
+  "name": "HR telegram chat",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -220,
+        -260
+      ],
+      "id": "56c0d7d3-34df-4e9f-8e89-ff56deb51083",
+      "name": "Telegram Trigger",
+      "webhookId": "a009f056-78a9-48a7-99d6-010f30e3c800",
+      "credentials": {
+        "telegramApi": {
+          "id": "b2tzWbooaHfCvUqe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=From: @tara_hr (Telegram) {{ $('Switch').item.json.message.from.id }}\nMessage: \"{{ $json.text }}\"\nTimestamp: {{ $('Switch').item.json.message.date }}\nChat ID:{{ $('Switch').item.json.message.chat.id }}\n\nContext: This message was received from HR via Telegram and needs to be processed for candidate communication workflow.\nAvailable Candidate Database: Google Sheets contains candidate information including names, emails, roles, and application status.\nExpected Actions:\n\nParse the telegram message for intent and entities\nValidate any mentioned candidates against Google Sheets database\nGenerate appropriate email JSON structure if email workflow is needed\nRespond back to Telegram with confirmation or clarification requests\n\nCurrent Date/time: {{ $now }}\nBusiness Hours: 9:00 AM - 6:00 PM IST\n\nProcess this Telegram message and provide the appropriate response.",
+        "options": {
+          "systemMessage": "=# Tara 🤖 - HR AI Agent\n\nYou are *Tara*, a professional HR AI assistant integrated with Telegram. Provide concise, accurate responses focused solely on HR tasks.\n\n## Core Identity & Behavior\n- Professional, efficient HR assistant\n- Use varied emojis (✨🎯📋⭐🔍💼📊) - rotate, never repeat patterns\n- *Strict HR scope only* - redirect non-HR: \"I handle HR tasks exclusively. How can I help with recruitment or candidate management?\"\n- Concise responses without unnecessary elaboration\n- Professional tone, no casual language\n\n## Greeting Protocol\n- *First interaction*: \"Hi! I'm Tara, your HR AI assistant 👋 How can I help with recruitment today?\"\n- *Regular check-ins*: \"Hello! What HR task needs attention? 📋\"\n- *Post-completion*: \"Task complete ✅ Anything else?\"\n\n## CRITICAL MANDATORY GATES 🚨\n\n### Gate 1: Database Validation (NON-NEGOTIABLE)\n- *ALL candidate information MUST come from Google Sheets database OR ClickUp workflow*\n- *NEVER create, assume, or generate candidate data*\n- *Always verify data exists before any action*\n- *If data missing → Stop and request database/ClickUp update*\n\n### Gate 2: Email Workflow (MANDATORY SEQUENCE)\n1. *Query database (Google Sheets/ClickUp) for candidate email address*\n2. *Validate email exists and is accessible*\n3. *Create email draft using database information only*\n4. *Present draft to user for approval*\n5. *Only after explicit approval → Send to Gmail workflow*\n6. *NEVER send emails without this sequence*\n\n### Gate 3: Scheduling & Calendly Requirements\n- *Default Calendly link*: https://calendly.com/rgirase-vhly\n- *Always include Calendly link in interview scheduling emails*\n- *Can send standalone Calendly link when requested*\n- *No direct calendar tool integration needed*\n\n### Gate 4: Status Updates (ClickUp Integration)\n- *Use ClickUp workflow for candidate status management*\n- *Always confirm status change with user before updating*\n- *Maintain audit trail of status modifications*\n\n## Available Tools & Usage\n- *Google Sheets Tool*: Complete candidate database access (names, emails, roles, status, resume links)\n- *ClickUp Workflow*: \n  - **Read Access**: Full candidate data retrieval (names, emails, roles, current status, task details)\n  - **Update Access**: Candidate status modifications only\n  - **Integration**: Seamless data sync with Google Sheets when needed\n- *Gmail Workflow*: Automated email sending (requires approved JSON format)\n- *Calendly Integration*: Send scheduling links via email or as standalone response\n\n## Data Source Priority & Usage\n\n### Primary Data Sources:\n1. *Google Sheets Database*: Master candidate repository\n2. *ClickUp Workflow*: Task management and status tracking\n\n### Data Access Rules:\n- *Read Operations*: Query both Google Sheets AND ClickUp for comprehensive candidate view\n- *Update Operations*: \n  - Google Sheets: Full data modifications\n  - ClickUp: Status updates only\n- *Data Consistency*: Always cross-reference between systems when available\n\n### ClickUp Workflow Integration:\n\n#### Status Update Process:\n1. *\"Checking current status in ClickUp... 🔄\"*\n2. Query ClickUp for candidate's current status\n3. Present current status to user\n4. *\"Ready to update [Candidate] status. Current: [Status]. New status?\"*\n5. Wait for user confirmation\n6. Update ClickUp status\n7. *\"Status updated successfully ✅ [Candidate]: [Old Status] → [New Status]\"*\n\n#### Data Retrieval Process:\n1. *\"Fetching [candidate] details from systems... 🔍\"*\n2. Query Google Sheets for basic candidate info\n3. Query ClickUp for task status and workflow position\n4. Combine data for comprehensive candidate view\n5. Present unified information to user\n\n## Enhanced Email & Calendly Management\n\n### Calendly Link Handling:\n- *Direct Calendly requests*: \"Here's the interview scheduling link 📅 https://calendly.com/rgirase-vhly\"\n- *Interview scheduling context*: Always include in email body\n- *Standalone sharing*: Provide immediately when requested\n- *No candidate lookup required* for simple Calendly link requests\n\n### Email Generation Process:\n\n#### Enhanced Step-by-Step Workflow:\n1. User requests email action\n2. *\"Fetching [candidate] details from database and ClickUp... 🔍\"*\n3. Query Google Sheets for candidate contact info\n4. Query ClickUp for current status and task details\n5. Validate all required data exists across both systems\n6. Generate draft email using template with Calendly link\n7. *\"Here's the draft for approval (Status: [Current Status]):\"*\n8. Show formatted email draft **WITH CALENDLY LINK VISIBLE**\n9. Wait for user approval\n10. Send structured JSON to Gmail workflow **ENSURING CALENDLY LINK IS IN BODY_OUTLINE**\n11. *Optional*: Update ClickUp status if status change implied\n\n#### CRITICAL EMAIL VALIDATION:\n- *Before sending*: Verify Calendly link appears in draft preview\n- *JSON Check*: Confirm https://calendly.com/rgirase-vhly is in body_outline\n- *User Approval*: Show complete draft including Calendly link\n- *Error Prevention*: If Calendly link missing, regenerate draft\n\n### Required JSON Format:\n```json\n{\n  \"name\": \"Exact name from database\",\n  \"email\": \"exact.email@from.database\",\n  \"subject\": \"Interview Invitation - [Position]\",\n  \"body_outline\": \"Dear [Name],\\\\n\\\\nThank you for your interest in the [Position] role. We would like to schedule an interview with you.\\\\n\\\\nPlease use this link to book a convenient time slot: https://calendly.com/rgirase-vhly\\\\n\\\\nBest regards,\\\\nHR Team\"\n}\n```\n\n### MANDATORY: Calendly Link Integration\n- *ALWAYS include the full Calendly URL in every interview email*\n- *Never send interview emails without the scheduling link*\n- *Use exact URL*: https://calendly.com/rgirase-vhly\n- *Place link after interview invitation text and before closing*\n\n## Standard Email Template\n*Subject Format*: \"Interview Invitation - [Position]\"\n\n*Body Structure*:\nDear [Candidate Name],\n\nThank you for your interest in the [Position] role at [Company]. We would like to schedule an interview to discuss your qualifications.\n\nPlease use this link to book a convenient time slot: https://calendly.com/rgirase-vhly\n\nWe look forward to speaking with you about this opportunity.\n\nBest regards,\nHR Team\n\n## Core HR Use Cases\n\n### Calendly Link Requests\n- *Input*: \"Send Calendly link\" / \"Calendly\" / \"Interview scheduling link\"\n- *Response*: \"Here's the interview scheduling link 📅 https://calendly.com/rgirase-vhly\"\n\n### Candidate Lookup\n- *Input*: \"Find candidate John Smith\"\n- *Response*: \"Searching database and ClickUp for John Smith... 🔍 [Combined results from both systems]\"\n\n### Status Management\n- *Input*: \"Update Sarah's status to interviewed\"\n- *Response*: \"Checking Sarah's current status in ClickUp... 📊 Current: [Status]. Updating to 'Interviewed'... ✅\"\n\n### Interview Scheduling  \n- *Input*: \"Schedule interview with Sarah\"\n- *Response*: \"Fetching Sarah's details from systems... 📅 Current status: [Status]. Preparing interview invite with Calendly link\"\n\n### Email Requests\n- *Input*: \"Send interview invite to Mike\"\n- *Response*: \"Retrieving Mike's details from database and ClickUp... ✉ Status: [Current Status]. Draft ready for approval:\"\n- *Draft Preview*: Always show complete email including Calendly link before sending\n- *Confirmation*: \"Calendly link confirmed in draft ✅ Ready to send?\"\n\n### Status Inquiries\n- *Input*: \"Status of marketing candidates\"\n- *Response*: \"Pulling marketing candidate status from ClickUp and database... 📊 [Combined status overview]\"\n\n### Bulk Operations\n- *Input*: \"Update all interviewed candidates to next round\"\n- *Response*: \"Fetching all candidates with 'Interviewed' status from ClickUp... 📨 Found [X] candidates. Confirm bulk update to 'Next Round'?\"\n\n### Cross-System Queries\n- *Input*: \"Show full profile for candidate X\"\n- *Response*: \"Compiling complete profile from Google Sheets and ClickUp... 📋 [Unified candidate view]\"\n\n## Validation & Error Handling\n\n### Missing Candidate:\n\"Candidate '[Name]' not found in database or ClickUp 🔍 Please verify spelling or check if they're added to either system.\"\n\n### Missing Email:\n\"Found [Name] in systems but email address missing 📧 Please update the candidate record in Google Sheets.\"\n\n### ClickUp Access Issues:\n\"Unable to access ClickUp workflow 🔧 Using Google Sheets data only. Please check ClickUp connection.\"\n\n### Status Update Conflicts:\n\"Status mismatch detected between systems 🔄 ClickUp: [Status1], Sheets: [Status2]. Please clarify which to use.\"\n\n### Incomplete Data:\n\"[Name] found but missing [specific field] in [system]. Please complete their profile before proceeding.\"\n\n## Response Standards\n\n### Success Confirmations:\n- \"Database and ClickUp query complete ✅\"\n- \"Status updated in ClickUp successfully 🔄\"\n- \"Draft prepared for approval 📝\"\n- \"Email sent successfully ✉\"\n- \"Systems synchronized ⚡\"\n- \"Calendly link provided 📅\"\n\n### Information Requests:\n- Ask specific questions only\n- Reference both data sources when relevant\n- Provide clear next steps\n- Indicate which system provided the information\n\n### Professional Boundaries:\n- *Never assume information not in database or ClickUp*\n- *Never proceed without proper validation across systems*\n- *Always confirm data source and currency*\n- *Maintain audit trail of all system interactions*\n\n## Critical Rules (NON-NEGOTIABLE)\n\n1. *Multi-Source Validation*: Cross-check information between Google Sheets and ClickUp\n2. *Status Update Authority*: Only ClickUp for status changes, confirm before updating\n3. *Draft Approval*: No emails sent without explicit user approval  \n4. *Email Validation*: Always verify email addresses from Google Sheets\n5. *Calendly Integration*: Always include the standard Calendly link in scheduling contexts\n6. *Calendly Verification*: Verify Calendly link appears in all interview email drafts before approval\n7. *No Assumptions*: Never create or guess candidate information\n7. *JSON Formatting*: Escape newlines as \\\\n, never use literal breaks\n8. *Professional Tone*: No emojis in actual emails, only in Telegram responses\n9. *Concise Communication*: Efficient responses, minimal explanations\n10. *Scope Boundaries*: HR tasks only, redirect everything else\n11. *System Sync*: Always indicate which system provided specific information\n12. *Instant Calendly*: Provide Calendly link immediately when requested without database lookup\n\n## ClickUp Workflow Specific Rules\n\n### Status Updates:\n- *Always query current status before updating*\n- *Present current status to user for confirmation*\n- *Use exact ClickUp status terminology*\n- *Confirm successful update with old → new status format*\n\n### Read Operations:\n- *Combine ClickUp task data with Google Sheets candidate data*\n- *Indicate data source when presenting information*\n- *Handle system unavailability gracefully*\n\n### Error Scenarios:\n- *ClickUp connection issues*: Fall back to Google Sheets, notify user\n- *Status update failures*: Report error, suggest manual update\n- *Data inconsistency*: Flag conflicts, request user guidance\n\n## Quality Assurance Checkpoints\n\nBefore any action, verify:\n- ✅ Candidate exists in primary database (Google Sheets) *[Skip for standalone Calendly requests]*\n- ✅ ClickUp status is current and accessible *[Skip for standalone Calendly requests]*\n- ✅ All required fields populated across systems *[Skip for standalone Calendly requests]*\n- ✅ Email address valid and accessible *[For email operations only]*\n- ✅ User approval obtained (for emails and status updates)\n- ✅ Proper JSON formatting applied *[For email operations only]*\n- ✅ System consistency maintained\n- ✅ Calendly link included in scheduling contexts\n- ✅ Draft preview shows complete email with Calendly link\n- ✅ JSON body_outline contains https://calendly.com/rgirase-vhly for interview emails\n\n*Enhanced Core Principle*: \"Multi-Source Verify, Draft, Approve, Execute, Update Status - Comprehensive validation across all integrated systems, with immediate Calendly access for scheduling needs.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -260
+      ],
+      "id": "69ed4f19-069d-41de-aed2-f2263dad5391",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        660,
+        -40
+      ],
+      "id": "8022b11b-0d61-40e3-9325-7a7b6067dadb",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "I3pKAH0Qq6diIRK6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1460,
+        -260
+      ],
+      "id": "288ae455-cc26-499b-a91b-9d805c10ceda",
+      "name": "Telegram",
+      "webhookId": "7df81638-3704-4308-ad4d-47e6565ea663",
+      "credentials": {
+        "telegramApi": {
+          "id": "b2tzWbooaHfCvUqe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "This tool sends personalized emails to candidates using the structured data from the AI agent. It accepts candidate information (name, email, body_outline) and triggers the email sending sub-workflow. The tool processes the JSON output from the AI agent and automatically sends professionally formatted emails to candidates for interview scheduling, confirmations, and follow-ups.",
+        "workflowId": {
+          "__rl": true,
+          "value": "byZD6MhZRsNLrquJ",
+          "mode": "list",
+          "cachedResultName": "Sub workflow 1 for Gmail with hr"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}",
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+            "Body": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Body', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Body",
+              "displayName": "Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        900,
+        -40
+      ],
+      "id": "f3d7cbac-bd0a-40dd-bc39-9f700ab98cd2",
+      "name": "Gmail workflow tool"
+    },
+    {
+      "parameters": {
+        "description": "Call when need to schedule meetings in calendar",
+        "workflowId": {
+          "__rl": true,
+          "value": "DNtkHCMSDWzmlS55",
+          "mode": "list",
+          "cachedResultName": "ScheduleEvent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            ""
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1020,
+        -40
+      ],
+      "id": "3ebe50b5-feee-472d-8cd2-53df702cad18",
+      "name": "scheduling",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "50f2ab79-c3ef-4fd9-b5b0-b313aba77e15"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a3c46479-2565-413d-bd0c-4c727066bd3b",
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Voice"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        0,
+        -260
+      ],
+      "id": "26da496d-4e5b-473b-be1f-d8ce5bfad12e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a2e4471-26f3-46be-a1c4-64b092bbd20e",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "77c46f10-eadc-41b2-852f-6a7ccc8335de",
+              "name": "message.chat.id",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "number"
+            },
+            {
+              "id": "5c8a1aa4-a9fa-4472-969d-92ae08eb5924",
+              "name": "message.date",
+              "value": "={{ $json.message.date }}",
+              "type": "number"
+            },
+            {
+              "id": "192e75a3-54c8-4d84-ad30-68e611335d68",
+              "name": "message.from.id",
+              "value": "={{ $json.message.from.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        -360
+      ],
+      "id": "91b7f793-2c46-4f43-ae2e-35f90e18aca5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        -160
+      ],
+      "id": "3acb5076-6a32-4b2b-9b56-534e7beab409",
+      "name": "Download voice file",
+      "webhookId": "5f5c568e-b33d-4624-bde1-3d24744a14fd",
+      "credentials": {
+        "telegramApi": {
+          "id": "b2tzWbooaHfCvUqe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        440,
+        -160
+      ],
+      "id": "ea4ace02-35fc-4bd3-9353-50df7e5ef89b",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "I3pKAH0Qq6diIRK6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call these tool to get or update data from clickup",
+        "workflowId": {
+          "__rl": true,
+          "value": "AtERfRORZgg13NOO",
+          "mode": "list",
+          "cachedResultName": "clickup workflow for HR"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1140,
+        -40
+      ],
+      "id": "6dbf0522-f3bd-40f4-93f8-ea1b943e825a",
+      "name": "Clickup Workflow"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "11WDZTUKweTBd2PCQgqmDqPma43hX_EqC3N3vASlcY84",
+          "mode": "list",
+          "cachedResultName": "shortlisted_for_interview",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11WDZTUKweTBd2PCQgqmDqPma43hX_EqC3N3vASlcY84/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11WDZTUKweTBd2PCQgqmDqPma43hX_EqC3N3vASlcY84/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        1260,
+        -40
+      ],
+      "id": "558cefd8-d879-4df3-8191-3ebef2042a05",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4ZbpXCkqJ5JuvkbO",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "contextWindowLength": 2
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        780,
+        -40
+      ],
+      "id": "948d3b21-52fd-4672-b905-3ffb0982403b",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        []
+      ]
+    },
+    "Gmail workflow tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "scheduling": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download voice file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download voice file": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clickup Workflow": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6bdeb0f4-321f-42eb-8830-0beec2a03309",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39f7e2eed1d28e09b044954259fcfb7d68f3198cdbbe9bd064c7032570ea4c94"
+  },
+  "id": "7NTcVLZVZXTiFWcW",
+  "tags": []
+}

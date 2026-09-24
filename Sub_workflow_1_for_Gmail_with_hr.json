@@ -1,0 +1,210 @@
+{
+  "name": "Sub workflow 1 for Gmail with hr",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Name"
+            },
+            {
+              "name": "Email"
+            },
+            {
+              "name": "Body"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        80,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        560
+      ],
+      "id": "4e72fe2d-f9d6-4bc5-a8e1-e7e46cb35024",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "I3pKAH0Qq6diIRK6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Code').item.json.email }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1116,
+        300
+      ],
+      "id": "45270330-10e6-4eea-be9f-2c7c667f6610",
+      "name": "Gmail",
+      "webhookId": "23b67e8d-b088-4e69-a0c8-aaedc1c20deb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "msqbLFWctNdGkXt5",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=<system_prompt>\nYOU ARE AN ELITE EMAIL FORMATTER AND SUBJECT LINE GENERATOR. YOUR TASK IS TO:\n\n- **ACCEPT A RAW EMAIL BODY INPUT** THROUGH THE FIELD: `\"input_body\"`  \n- **ANALYZE THE CONTENT TO EXTRACT A PROFESSIONAL EMAIL SUBJECT**  \n- **CONVERT THE EMAIL BODY INTO A CLEAN, RESPONSIVE HTML EMAIL**\n\n---\n\n###INPUT FORMAT###\n\nTHE EMAIL WILL BE PROVIDED INSIDE A JSON OBJECT USING THE FOLLOWING FIELD:\n\n```json\n{\n  \"input_body\": \"{{ $json.formattedBody }}\"\n}\n```\n\n↳ REPLACE `<<<INSERT_RAW_EMAIL_TEXT_HERE>>>` WITH THE ACTUAL RAW EMAIL CONTENT (IN ESCAPED TEXT FORMAT)\n\n---\n\n###REQUIRED OUTPUT FORMAT###\n\nRETURN A **VALID JSON OBJECT** CONTAINING:\n\n- `\"subject\"`: A short, relevant, professional subject line summarizing the email  \n- `\"html_body\"`: The full email body converted into well-formatted HTML\n\n---\n\n###CHAIN OF THOUGHT###\n\n1. **UNDERSTAND**: READ the full string under `\"input_body\"`  \n2. **BASICS**: IDENTIFY recipient name, purpose of message, sender name  \n3. **BREAK DOWN**: SEPARATE greeting, main message, and sign-off  \n4. **ANALYZE**: DETERMINE tone and context (e.g., job interview, offer, request)  \n5. **BUILD**: FORMAT as semantic HTML (`<p>`, `<br>`, `<strong>`, etc.)  \n6. **EDGE CASES**: If no clear subject is derivable, default to a safe and professional title  \n7. **FINAL ANSWER**: OUTPUT the result in **this exact JSON structure**:\n\n```json\n{\n  \"subject\": \"<<<GENERATED_SUBJECT_LINE>>>\",\n  \"html_body\": \"<<<FORMATTED_HTML_EMAIL_BODY>>>\"\n}\n```\n\n---\n\n###WHAT NOT TO DO###\n\n- **DO NOT OMIT** the `\"subject\"` or `\"html_body\"` fields  \n- **DO NOT OUTPUT PLAINTEXT** — `\"html_body\"` MUST CONTAIN VALID HTML  \n- **DO NOT USE EXTERNAL CSS FILES** — STYLES MUST BE INLINE  \n- **NEVER FABRICATE OR ADD CONTENT** NOT PRESENT IN THE `input_body`  \n- **AVOID VAGUE SUBJECTS** LIKE `\"Hello\"` OR `\"Follow Up\"` UNLESS CONTEXT REQUIRES IT  \n\n---\n\n###EXAMPLE INPUT###\n\n```json\n{\n  \"input_body\": \"Hi Aryan,\\\\n\\\\nWe are pleased to inform you that you have been shortlisted for the Frontend Developer position at our company.\\\\n\\\\nWe will proceed with the next steps in the interview process soon. Please stay tuned for further instructions.\\\\n\\\\nIf you have any questions in the meantime, feel free to reach out.\\\\n\\\\nBest regards,\\\\nTara\\\\nHR Team\"\n}\n```\n\n###EXPECTED OUTPUT###\n\n```json\n{\n  \"subject\": \"Congratulations – You've Been Shortlisted for the Frontend Developer Role\",\n  \"html_body\": \"<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset=\\\"UTF-8\\\">\\n  <style>\\n    body { font-family: Arial, sans-serif; padding: 20px; }\\n  </style>\\n</head>\\n<body>\\n  <p>Hi Aryan,</p>\\n  <p>We are pleased to inform you that you have been shortlisted for the <strong>Frontend Developer</strong> position at our company.</p>\\n  <p>We will proceed with the next steps in the interview process soon. Please stay tuned for further instructions.</p>\\n  <p>If you have any questions in the meantime, feel free to reach out.</p>\\n  <p>Best regards,<br>Tara<br>HR Team</p>\\n</body>\\n</html>\"\n}\n```\n\n</system_prompt>\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        520,
+        300
+      ],
+      "id": "04e98155-2029-4979-9505-e4618bc55802",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "I3pKAH0Qq6diIRK6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawBody = $input.first().json.Body;\nconst name = $input.first().json.Name;\nconst email = $input.first().json.Email;\n\n// Replace escaped \\n with actual newlines\nconst formattedBody = rawBody.replace(/\\\\n/g, '\\n');\n\n// Return a new JSON object with formatted body\nreturn [\n  {\n    json: {\n      Body: rawBody,\n      formattedBody: formattedBody,\n      name : name,\n      email: email\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        300
+      ],
+      "id": "e75914f4-8d74-4fdb-9bc9-f47e8330c89d",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawContent = $input.first().json.message.content;\n\nlet cleanedJsonString;\nlet emailData;\n\n// Try to extract JSON inside triple backticks\nconst match = rawContent.match(/```json\\s*([\\s\\S]*?)```/);\n\nif (match) {\n  cleanedJsonString = match[1].trim();\n} else {\n  cleanedJsonString = rawContent.trim(); // fallback: assume direct JSON string\n}\n\n// Parse the cleaned JSON\ntry {\n  emailData = JSON.parse(cleanedJsonString);\n} catch (err) {\n  throw new Error(\"Failed to parse email JSON content: \" + err.message);\n}\n\n// Return subject and html body\nreturn [\n  {\n    json: {\n      subject: emailData.subject,\n      body: emailData.html_body\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ],
+      "id": "c0e7c6be-c00d-4c13-b4b3-5f418c59ae9d",
+      "name": "Code1"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "Name": "Kulvansh ",
+          "Email": "kulvanshrajput507@gmail.com",
+          "Body": "Hi Aryan,\n\nWe are pleased to inform you that you have been shortlisted for the Frontend Developer position at our company.\n\nWe will proceed with the next steps in the interview process soon. Please stay tuned for further instructions.\n\nIf you have any questions in the meantime, feel free to reach out.\n\nBest regards,\nTara\nHR Team"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d59591af-2655-4470-bcdc-27e6b6596fb8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39f7e2eed1d28e09b044954259fcfb7d68f3198cdbbe9bd064c7032570ea4c94"
+  },
+  "id": "byZD6MhZRsNLrquJ",
+  "tags": []
+}

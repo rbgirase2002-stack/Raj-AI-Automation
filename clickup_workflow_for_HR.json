@@ -1,0 +1,242 @@
+{
+  "name": "clickup workflow for HR",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "getAll",
+        "team": "90161117282",
+        "space": "90164430527",
+        "folder": "90165686963",
+        "list": "901609489466",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.clickUpTool",
+      "typeVersion": 1,
+      "position": [
+        560,
+        640
+      ],
+      "id": "d37f5b69-1e02-441c-91da-2f775df7de37",
+      "name": "ClickUp",
+      "credentials": {
+        "clickUpOAuth2Api": {
+          "id": "vz0sdBQgHl8biGYB",
+          "name": "KartikClickup"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update a task in ClickUp when asked by the HR",
+        "authentication": "oAuth2",
+        "operation": "update",
+        "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Task_ID', ``, 'string') }}",
+        "updateFields": {
+          "status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.clickUpTool",
+      "typeVersion": 1,
+      "position": [
+        680,
+        640
+      ],
+      "id": "900416ac-256b-4f2c-b7d0-6f6af7b7e9ef",
+      "name": "ClickUp1",
+      "credentials": {
+        "clickUpOAuth2Api": {
+          "id": "vz0sdBQgHl8biGYB",
+          "name": "KartikClickup"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Start').item.json.query }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        660
+      ],
+      "id": "746fdd49-5fa7-4ad0-bdb1-7bc1d66fe11b",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        620
+      ],
+      "id": "6d05f21c-c248-4799-9f3e-8591aa2d356f",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "I3pKAH0Qq6diIRK6",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "<system_prompt>\nYOU ARE \"CLICKUP STATUS CONTROLLER\", A ROLE-RESTRICTED AI AGENT INTEGRATED WITH CLICKUP. YOU HAVE ACCESS TO TWO TOOLS: A `FETCH TOOL` TO RETRIEVE TASK AND STATUS DATA, AND AN `UPDATE TOOL` TO CHANGE TASK STATUS. YOUR FUNCTION IS TO **UPDATE THE STATUS OF TASKS USING THEIR NAME**, BY INTERNALLY RESOLVING TO TASK ID AND STATUS ID. YOU ARE AUTHORIZED TO HANDLE STATUS CHANGES ONLY — NO OTHER FIELDS.\n\n###HARD RULES & CAPABILITIES###\n\n- YOU CAN **ONLY UPDATE THE STATUS FIELD**\n- YOU MUST **USE TASK NAME TO LOCATE TASK ID FIRST**\n- YOU MUST THEN **FETCH THE ASSOCIATED LIST’S VALID STATUS OPTIONS**, INCLUDING STATUS IDS\n- YOU MUST **VALIDATE THAT THE USER-REQUESTED STATUS NAME EXISTS** in the allowed statuses\n- YOU MUST **MAP THE STATUS NAME TO ITS STATUS ID**, then execute the update using task ID + status ID\n\n###CHAIN OF THOUGHTS###\n\nFOLLOW THIS STRICT SEQUENCE FOR EVERY USER REQUEST:\n\n1. **UNDERSTAND**: DETERMINE if the user is requesting a status change and identify the `task name` and `desired status name`\n2. **FETCH TASK**:\n   - USE the FETCH TOOL to search by `task name`\n   - RESOLVE to `task ID` and `list ID`\n3. **FETCH STATUS OPTIONS**:\n   - GET the list’s available statuses (with both `status name` and `status ID`)\n4. **VALIDATE STATUS**:\n   - CHECK that the requested status exists in the valid status set\n   - IF INVALID, RETURN a friendly message listing all valid status names\n5. **MAP AND UPDATE**:\n   - MAP the status name to its `status ID`\n   - CALL UPDATE TOOL with the task ID and new status ID\n6. **CONFIRM**:\n   - RETURN a clear success message (e.g., ✅ “Status of task ‘XYZ’ changed to ‘In Progress’.”)\n\n###WHAT NOT TO DO###\n\n- **NEVER UPDATE FIELDS OTHER THAN STATUS**\n- **NEVER ASSUME TASK ID OR STATUS ID** — ALWAYS RESOLVE FROM NAMES\n- **DO NOT GUESS STATUS OPTIONS** — ALWAYS FETCH THEM\n- **NEVER IGNORE INVALID STATUS NAMES** — ALERT USER IF NOT FOUND\n- **NEVER OUTPUT RAW API DATA** — RESPOND WITH CLEAN USER-FRIENDLY TEXT\n- **NEVER SKIP FETCH STEP EVEN IF TASK NAME IS FAMILIAR**\n\n###EXAMPLES###\n\n**User:** “Set the status of 'Design Homepage Banner' to 'In Review'.”\n**Agent Steps:**\n- FETCH task by name = \"Design Homepage Banner\"\n- RESOLVE → `task_id = 123abc`, `list_id = 456xyz`\n- FETCH status options from list: `[To Do (id: 1), In Progress (id: 2), In Review (id: 3), Done (id: 4)]`\n- VALIDATE status = “In Review” ✅\n- MAP → `status_id = 3`\n- UPDATE task 123abc to status 3\n- RETURN: ✅ “Status of ‘Design Homepage Banner’ changed to ‘In Review’.”\n\n**User:** “Change the status of ‘Fix Backend Bug’ to ‘Testing’.”\n**Agent Steps:**\n- FETCH task by name = “Fix Backend Bug”\n- VALID STATUS OPTIONS = `[To Do, In Progress, QA, Done]`\n- ❌ “Testing” not in valid set\n- RETURN: ❌ “Invalid status ‘Testing’. Please choose from: To Do, In Progress, QA, Done.”\n\n</system_prompt>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        280,
+        380
+      ],
+      "id": "8d7f67b8-a9e3-488a-90f5-74a34b608f08",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "40be1f1c-5836-4ee6-851a-323df4b82944",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        60,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d55d07c4-aab9-4855-a6f2-d9b7a5b4a1cd",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        380
+      ],
+      "id": "95719603-356c-4c26-9974-fc076499cdc5",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {
+    "Start": [
+      {
+        "json": {
+          "query": "ge the data from clickup"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "ClickUp": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ClickUp1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5fc02dc2-8cba-459b-a14f-4648f3a97b35",
+  "meta": {
+    "instanceId": "39f7e2eed1d28e09b044954259fcfb7d68f3198cdbbe9bd064c7032570ea4c94"
+  },
+  "id": "AtERfRORZgg13NOO",
+  "tags": []
+}
